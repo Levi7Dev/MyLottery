@@ -24,8 +24,9 @@ public class ActivityBooth implements IActivityBooth {
 
     @Override
     public ActivityRes queryActivityById(ActivityReq req) {
+        //封装mybaits从数据库获取返回的数据，IActivityDao被@Mapper注解修饰，会调用mybatis查数据
         Activity activity = activityDao.queryActivityById(req.getActivityId());
-
+        //进一步封装数据，需要远程发送到请求端，参数需要实现Serializable接口
         ActivityDto activityDto = new ActivityDto();
         activityDto.setActivityId(activity.getActivityId());
         activityDto.setActivityName(activity.getActivityName());
