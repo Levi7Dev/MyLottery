@@ -6,13 +6,28 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="lottery-application" />
-        <module name="lottery-rpc" />
+        <module name="test" />
         <module name="lottery-infrastructure" />
-        <module name="lottery-interfaces" />
         <module name="lottery-common" />
         <module name="lottery-domain" />
+        <module name="lottery-application" />
+        <module name="lottery-rpc" />
+        <module name="lottery-interfaces" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="test" target="8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="lottery-application" options="-parameters" />
+      <module name="lottery-common" options="-parameters" />
+      <module name="lottery-domain" options="-parameters" />
+      <module name="lottery-infrastructure" options="-parameters" />
+      <module name="lottery-interfaces" options="-parameters" />
+      <module name="lottery-rpc" options="-parameters" />
+      <module name="test" options="-parameters" />
+    </option>
   </component>
 </project>
