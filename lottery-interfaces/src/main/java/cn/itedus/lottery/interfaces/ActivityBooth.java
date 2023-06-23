@@ -15,6 +15,7 @@ import javax.annotation.Resource;
 /**
  * 活动展台
  */
+//dubbo中的注解，将该类注册到注册中心
 @Service
 public class ActivityBooth implements IActivityBooth {
 
