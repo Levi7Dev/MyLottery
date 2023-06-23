@@ -1,14 +1,17 @@
 package cn.itedus.lottery.domain.strategy.service.algorithm.impl;
 
 import cn.itedus.lottery.domain.strategy.service.algorithm.BaseAlgorithm;
+import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
 import java.util.List;
 
-/**
+/*
+ *【推荐】单项随机概率抽奖，抽到一个已经排掉的奖品则未中奖
  *@author Levi
  *@create 2023/6/23 16:33
  */
+@Component("singleRateRandomDrawAlgorithm")
 public class SingleRateRandomDrawAlgorithm extends BaseAlgorithm {
 
     @Override
