@@ -14,8 +14,8 @@ import java.util.List;
 public class DrawBase extends DrawConfig {
 
     public void checkAndInitRateData(Long strategyId, Integer strategyMode, List<StrategyDetail> strategyDetailList) {
-        if (1 != strategyMode) return;
-        IDrawAlgorithm drawAlgorithm = super.drawAlgorithmMap.get(strategyId);
+        //if (1 != strategyMode) return;
+        IDrawAlgorithm drawAlgorithm = drawAlgorithmMap.get(strategyMode);
 
         boolean existRateTuple = drawAlgorithm.isExistRateTuple(strategyId);
         if (existRateTuple) return;

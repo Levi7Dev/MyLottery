@@ -16,7 +16,7 @@ public class StrategyRich {
     private Long strategyId;
     // 策略配置
     private Strategy strategy;
-    // 策略明细
+    // 策略明细，同一个策略下可能有多个策略明细记录，用list存储
     private List<StrategyDetail> strategyDetailList;
 
     public StrategyRich() {
@@ -50,5 +50,14 @@ public class StrategyRich {
 
     public void setStrategyDetailList(List<StrategyDetail> strategyDetailList) {
         this.strategyDetailList = strategyDetailList;
+    }
+
+    @Override
+    public String toString() {
+        return "StrategyRich{" +
+                "strategyId=" + strategyId +
+                ", strategy=" + strategy +
+                ", strategyDetailList=" + strategyDetailList +
+                '}';
     }
 }

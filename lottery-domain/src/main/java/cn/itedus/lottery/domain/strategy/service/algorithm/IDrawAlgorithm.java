@@ -28,7 +28,7 @@ public interface IDrawAlgorithm {
      * 生成随机数，索引到对应奖品信息返回结果
      * @param[1] strategyId 策略id
      * @param[2] excludeAwardIds    不能作为奖品的id
-     * @return String   中奖结果
+     * @return String   奖品id
      * @time 2023/6/23 15:18
      */
     String randomDraw(Long strategyId, List<String> excludeAwardIds);

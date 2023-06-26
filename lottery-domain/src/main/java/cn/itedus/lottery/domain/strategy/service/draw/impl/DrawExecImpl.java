@@ -38,17 +38,18 @@ public class DrawExecImpl extends DrawBase implements IDrawExec {
 
         //获取抽奖策略配置数据
         StrategyRich strategyRich = strategyRepository.queryStrategyRich(req.getStrategyId());
+        logger.info("抽奖数据：{}", strategyRich.toString());
         Strategy strategy = strategyRich.getStrategy();
         List<StrategyDetail> strategyDetailList = strategyRich.getStrategyDetailList();
 
         //校验和初始化数据
-        super.checkAndInitRateData(req.getStrategyId(), strategy.getStrategyMode(), strategyDetailList);
+        checkAndInitRateData(req.getStrategyId(), strategy.getStrategyMode(), strategyDetailList);
 
         //根据策略方式抽奖
         IDrawAlgorithm drawAlgorithm = drawAlgorithmMap.get(strategy.getStrategyMode());
         String awardId = drawAlgorithm.randomDraw(req.getStrategyId(), new ArrayList<>());
 
-        //获取奖品信息
+        //获取奖品信息，但返回的奖品id可能为空
         Award award = strategyRepository.queryAwardInfo(awardId);
 
         logger.info("抽奖完成，中奖用户：{}，奖品ID：{}，奖品名称：{}", req.getuId(), awardId, award.getAwardName());

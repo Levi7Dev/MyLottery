@@ -87,4 +87,17 @@ public class StrategyDetail {
     public void setUpdateTime(String updateTime) {
         this.updateTime = updateTime;
     }
+
+    @Override
+    public String toString() {
+        return "StrategyDetail{" +
+                "id='" + id + '\'' +
+                ", strategyId=" + strategyId +
+                ", awardId='" + awardId + '\'' +
+                ", awardCount='" + awardCount + '\'' +
+                ", awardRate=" + awardRate +
+                ", createTime='" + createTime + '\'' +
+                ", updateTime='" + updateTime + '\'' +
+                '}';
+    }
 }

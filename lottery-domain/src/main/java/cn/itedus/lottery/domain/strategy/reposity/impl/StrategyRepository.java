@@ -8,6 +8,7 @@ import cn.itedus.lottery.infrastructure.dao.IStrategyDetailDao;
 import cn.itedus.lottery.infrastructure.po.Award;
 import cn.itedus.lottery.infrastructure.po.Strategy;
 import cn.itedus.lottery.infrastructure.po.StrategyDetail;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
  *@author Levi
  *@create 2023/6/23 17:28
  */
+@Component
 public class StrategyRepository implements IStrategyRepository {
 
     @Resource
@@ -32,6 +34,7 @@ public class StrategyRepository implements IStrategyRepository {
     public StrategyRich queryStrategyRich(Long strategyId) {
         Strategy strategy = strategyDao.queryStrategy(strategyId);
         List<StrategyDetail> strategyDetailList = strategyDetailDao.queryStrategyDetailList(strategyId);
+        //StrategyRich这个类主要对策略id，策略，策略明细起到一个关联封装的作用
         return new StrategyRich(strategyId, strategy, strategyDetailList);
     }
 
