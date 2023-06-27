@@ -75,7 +75,7 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
     protected abstract List<String> queryExcludeAwardIds(Long strategyId);
 
     /**
-     * 执行抽奖算法
+     * 执行抽奖算法，抽象方法，具体实现交给业务
      * @param strategyId      策略ID
      * @param drawAlgorithm   抽奖算法模型
      * @param excludeAwardIds 排除的抽奖ID集合
