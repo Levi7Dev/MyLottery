@@ -35,7 +35,7 @@ public class GoodsConfig {
     public void init() {
         goodsMap.put(Constants.AwardType.CouponGoods.getCode(), couponGoods);
         goodsMap.put(Constants.AwardType.DESC.getCode(), descGoods);
-        goodsMap.put(Constants.AwardType.CouponGoods.getCode(), couponGoods);
+        goodsMap.put(Constants.AwardType.CouponGoods.getCode(), redeemCodeGoods);
         goodsMap.put(Constants.AwardType.PhysicalGoods.getCode(), physicalGoods);
     }
 }

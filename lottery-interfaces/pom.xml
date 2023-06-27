@@ -59,6 +59,7 @@
             <artifactId>dubbo-spring-boot-starter</artifactId>
             <version>2.7.1</version>
         </dependency>
+
         <dependency>
             <groupId>com.levi</groupId>
             <artifactId>lottery-domain</artifactId>
