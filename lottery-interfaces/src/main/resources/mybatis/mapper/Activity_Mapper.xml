@@ -3,7 +3,6 @@
 <mapper namespace="cn.itedus.lottery.infrastructure.dao.IActivityDao">
 
     <resultMap id="activityMap" type="cn.itedus.lottery.infrastructure.po.Activity">
-        <!--id关联主键-->
         <id column="id" property="id"/>
         <result column="activity_id" property="activityId"/>
         <result column="activity_name" property="activityName"/>
@@ -23,7 +22,7 @@
         (activity_id, activity_name, activity_desc, begin_date_time, end_date_time,
         stock_count, take_count, state, creator, create_time, update_time)
         VALUES
-        (#{activityId}, #{activityName}, #{activityDesc}, #{beginDateTime}, #{endDateTime},
+        (#{activityId}, #{activityName}, #{activityDesc},#{beginDateTime}, #{endDateTime},
          #{stockCount}, #{takeCount}, #{state}, #{creator}, now(), now())
     </insert>
 
