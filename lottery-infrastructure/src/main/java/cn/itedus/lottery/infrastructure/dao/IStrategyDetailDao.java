@@ -25,4 +25,11 @@ public interface IStrategyDetailDao {
      */
     int deductStock(StrategyDetail strategyDetailReq);
 
+    /**
+     * 插入策略配置组
+     * @param[1] strategyDetailList
+     * @time 2023/6/28 22:54
+     */
+    void insertList(List<StrategyDetail> strategyDetailList);
+
 }
