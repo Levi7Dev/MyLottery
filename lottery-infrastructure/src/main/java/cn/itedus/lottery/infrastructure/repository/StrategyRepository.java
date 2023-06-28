@@ -12,11 +12,13 @@ import cn.itedus.lottery.infrastructure.po.Award;
 import cn.itedus.lottery.infrastructure.po.Strategy;
 import cn.itedus.lottery.infrastructure.po.StrategyDetail;
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class StrategyRepository implements IStrategyRepository {
 
     @Resource
