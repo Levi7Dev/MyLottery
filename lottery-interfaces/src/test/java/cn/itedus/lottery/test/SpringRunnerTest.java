@@ -39,9 +39,9 @@ public class SpringRunnerTest {
     @Test
     public void test_drawExec() {
         drawExec.doDrawExec(new DrawReq("Levi", 10001l));
-        drawExec.doDrawExec(new DrawReq("A", 10002l));
+        drawExec.doDrawExec(new DrawReq("A", 10001l));
         drawExec.doDrawExec(new DrawReq("B", 10001l));
-        drawExec.doDrawExec(new DrawReq("C", 10002l));
+        drawExec.doDrawExec(new DrawReq("C", 10001l));
     }
 
     @Test

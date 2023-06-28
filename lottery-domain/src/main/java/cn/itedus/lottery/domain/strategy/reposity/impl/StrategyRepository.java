@@ -32,7 +32,9 @@ public class StrategyRepository implements IStrategyRepository {
 
     @Override
     public StrategyRich queryStrategyRich(Long strategyId) {
+        //根据策略id，查询策略信息
         Strategy strategy = strategyDao.queryStrategy(strategyId);
+        //根据策略信息，查询策略详情
         List<StrategyDetail> strategyDetailList = strategyDetailDao.queryStrategyDetailList(strategyId);
         //StrategyRich这个类主要对策略id，策略，策略明细起到一个关联封装的作用
         return new StrategyRich(strategyId, strategy, strategyDetailList);
