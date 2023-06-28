@@ -50,16 +50,26 @@ public class StrategyRepository implements IStrategyRepository {
     @Override
     public AwardBriefVO queryAwardInfo(String awardId) {
         Award award = awardDao.queryAwardInfo(awardId);
-        return null;
+        AwardBriefVO awardBriefVO = new AwardBriefVO();
+        awardBriefVO.setAwardId(award.getAwardId());
+        awardBriefVO.setAwardType(award.getAwardType());
+        awardBriefVO.setAwardName(award.getAwardName());
+        awardBriefVO.setAwardContent(award.getAwardContent());
+
+        return awardBriefVO;
     }
 
     @Override
     public List<String> queryNoStockStrategyAwardList(Long strategyId) {
-        return null;
+        return strategyDetailDao.queryNoStockStrategyAwardList(strategyId);
     }
 
     @Override
     public boolean deductStock(Long strategyId, String awardId) {
-        return false;
+        StrategyDetail req = new StrategyDetail();
+        req.setStrategyId(strategyId);
+        req.setAwardId(awardId);
+        int count = strategyDetailDao.deductStock(req);
+        return count == 1;
     }
 }
