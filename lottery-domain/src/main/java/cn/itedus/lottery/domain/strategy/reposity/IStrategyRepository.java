@@ -1,6 +1,7 @@
 package cn.itedus.lottery.domain.strategy.reposity;
 
 import cn.itedus.lottery.domain.strategy.model.aggregates.StrategyRich;
+import cn.itedus.lottery.domain.strategy.model.vo.AwardBriefVO;
 import cn.itedus.lottery.infrastructure.po.Award;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface IStrategyRepository {
 
     StrategyRich queryStrategyRich(Long strategyId);
 
-    Award queryAwardInfo(String AwardId);
+    AwardBriefVO queryAwardInfo(String AwardId);
 
     List<String> queryNoStockStrategyAwardList(Long strategyId);
 

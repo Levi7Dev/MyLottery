@@ -1,28 +1,34 @@
 package cn.itedus.lottery.domain.strategy.model.aggregates;
 
-import cn.itedus.lottery.infrastructure.po.Strategy;
-import cn.itedus.lottery.infrastructure.po.StrategyDetail;
+import cn.itedus.lottery.domain.strategy.model.vo.StrategyBriefVO;
+import cn.itedus.lottery.domain.strategy.model.vo.StrategyDetailBriefVO;
 
 import java.util.List;
 
-/*
- *@title StrategyRich
- *@description
- *@author Levi
- *@create 2023/6/23 15:40
+/**
+ * @description: 抽奖策略聚合对象
  */
 public class StrategyRich {
-    // 策略ID
+
+    /**
+     * 策略ID
+     */
     private Long strategyId;
-    // 策略配置
-    private Strategy strategy;
-    // 策略明细，同一个策略下可能有多个策略明细记录，用list存储
-    private List<StrategyDetail> strategyDetailList;
+
+    /**
+     * 策略配置
+     */
+    private StrategyBriefVO strategy;
+
+    /**
+     * 策略明细
+     */
+    private List<StrategyDetailBriefVO> strategyDetailList;
 
     public StrategyRich() {
     }
 
-    public StrategyRich(Long strategyId, Strategy strategy, List<StrategyDetail> strategyDetailList) {
+    public StrategyRich(Long strategyId, StrategyBriefVO strategy, List<StrategyDetailBriefVO> strategyDetailList) {
         this.strategyId = strategyId;
         this.strategy = strategy;
         this.strategyDetailList = strategyDetailList;
@@ -36,28 +42,20 @@ public class StrategyRich {
         this.strategyId = strategyId;
     }
 
-    public Strategy getStrategy() {
+    public StrategyBriefVO getStrategy() {
         return strategy;
     }
 
-    public void setStrategy(Strategy strategy) {
+    public void setStrategy(StrategyBriefVO strategy) {
         this.strategy = strategy;
     }
 
-    public List<StrategyDetail> getStrategyDetailList() {
+    public List<StrategyDetailBriefVO> getStrategyDetailList() {
         return strategyDetailList;
     }
 
-    public void setStrategyDetailList(List<StrategyDetail> strategyDetailList) {
+    public void setStrategyDetailList(List<StrategyDetailBriefVO> strategyDetailList) {
         this.strategyDetailList = strategyDetailList;
     }
 
-    @Override
-    public String toString() {
-        return "StrategyRich{" +
-                "strategyId=" + strategyId +
-                ", strategy=" + strategy +
-                ", strategyDetailList=" + strategyDetailList +
-                '}';
-    }
 }
