@@ -44,6 +44,7 @@ public class StrategyVO {
      */
     private List<StrategyDetailVO> strategyDetailList;
 
+
     public Long getStrategyId() {
         return strategyId;
     }

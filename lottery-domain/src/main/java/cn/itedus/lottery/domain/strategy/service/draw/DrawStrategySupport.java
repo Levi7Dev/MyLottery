@@ -3,8 +3,6 @@ package cn.itedus.lottery.domain.strategy.service.draw;
 import cn.itedus.lottery.domain.strategy.model.aggregates.StrategyRich;
 import cn.itedus.lottery.domain.strategy.model.vo.AwardBriefVO;
 import cn.itedus.lottery.domain.strategy.reposity.IStrategyRepository;
-import cn.itedus.lottery.infrastructure.po.Award;
-import cn.itedus.lottery.infrastructure.po.Strategy;
 
 import javax.annotation.Resource;
 
