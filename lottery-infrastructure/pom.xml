@@ -19,7 +19,11 @@
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>2.1.4</version>
         </dependency>
-
+        <!--主pom引入了，这里也得引用-->
+        <dependency>
+            <groupId>cn.bugstack.middleware</groupId>
+            <artifactId>db-router-spring-boot-starter</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.levi</groupId>
             <artifactId>lottery-domain</artifactId>

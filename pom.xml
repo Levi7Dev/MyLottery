@@ -98,6 +98,12 @@
                 <artifactId>hutool-all</artifactId>
                 <version>5.5.0</version>
             </dependency>
+            <!--引入自研数据库路由-->
+            <dependency>
+                <groupId>cn.bugstack.middleware</groupId>
+                <artifactId>db-router-spring-boot-starter</artifactId>
+                <version>1.0.1-SNAPSHOT</version>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>
