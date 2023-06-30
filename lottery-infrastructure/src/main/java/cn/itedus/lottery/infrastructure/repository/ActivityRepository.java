@@ -1,6 +1,7 @@
 package cn.itedus.lottery.infrastructure.repository;
 
 import cn.itedus.lottery.common.Constants;
+import cn.itedus.lottery.domain.activity.model.req.PartakeReq;
 import cn.itedus.lottery.domain.activity.model.vo.*;
 import cn.itedus.lottery.domain.activity.repository.IActivityRepository;
 import cn.itedus.lottery.infrastructure.dao.IActivityDao;
@@ -75,4 +76,14 @@ public class ActivityRepository implements IActivityRepository {
         int count = activityDao.alterState(alterStateVO);
         return 1 == count;
     }
+
+//    @Override
+//    public ActivityBillVO queryActivityBill(PartakeReq req) {
+//        return null;
+//    }
+//
+//    @Override
+//    public int subtractionActivityStock(Long activityId) {
+//        return 0;
+//    }
 }
