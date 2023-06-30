@@ -28,6 +28,7 @@ public class UserStrategyExportDaoTest {
     @Resource
     private IUserStrategyExportDao userStrategyExportDao;
 
+    //id生成器
     @Resource
     private Map<Constants.Ids, IIdGenerator> idGeneratorMap;
 
