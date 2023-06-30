@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
  * 用户策略计算结果表
  * 分表
  * DBRouterStrategy注解为分表注解
+ * 配置后会通过数据库路由组件把sql语句添加上分表字段，比如表 user 修改为 user_003
  */
 @Mapper
 @DBRouterStrategy(splitTable = true)
