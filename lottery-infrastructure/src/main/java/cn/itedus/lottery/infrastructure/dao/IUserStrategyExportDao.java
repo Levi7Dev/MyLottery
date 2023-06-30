@@ -18,7 +18,7 @@ public interface IUserStrategyExportDao {
     /**
      * 插入一条用户策略计算结果数据
      * 插入操作需要用到分库分表
-     * @param userStrategyExport
+     * @param userStrategyExport 入参
      */
     @DBRouter(key = "uId")
     void insert(UserStrategyExport userStrategyExport);
