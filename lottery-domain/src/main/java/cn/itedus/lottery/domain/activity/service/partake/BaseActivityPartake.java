@@ -13,9 +13,10 @@ import cn.itedus.lottery.domain.activity.model.vo.ActivityBillVO;
  */
 public abstract class BaseActivityPartake extends ActivityPartakeSupport implements IActivityPartake{
 
+    //执行领取活动的方法
     @Override
     public PartakeResult doPartake(PartakeReq req) {
-        //查询活动账单
+        //查询活动账单，根据活动id查询活动的信息（包括活动库存等）
         ActivityBillVO activityBillVO = super.queryActivityBill(req);
 
         //活动信息校验处理（活动库存，状态，日期，个人参与次数）

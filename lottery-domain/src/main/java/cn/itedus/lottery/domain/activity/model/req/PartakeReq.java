@@ -4,6 +4,7 @@ import java.util.Date;
 
 /**
  * @description: 参与活动请求
+ * 主要包含活动的用户id，用户参与的活动id，以及参与活动的时间（也就是点击的那一刻）
  */
 public class PartakeReq {
 
