@@ -14,7 +14,7 @@ import javax.annotation.Resource;
 public class ActivityPartakeSupport {
 
     @Resource
-    private IActivityRepository activityRepository;
+    protected IActivityRepository activityRepository;
 
     protected ActivityBillVO queryActivityBill(PartakeReq req) {
         return activityRepository.queryActivityBill(req);

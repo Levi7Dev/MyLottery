@@ -31,7 +31,7 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
         }
 
         //领取活动信息【个人用户把活动信息写入用户表】
-        Result grabResult = this.grabActivity(req);
+        Result grabResult = this.grabActivity(req, activityBillVO);
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(grabResult.getCode())) {
             return new PartakeResult(grabResult.getCode(), grabResult.getInfo());
         }
@@ -63,5 +63,5 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
      * @param partakeReq 参与活动请求
      * @return           领取结果
      */
-    protected abstract Result grabActivity(PartakeReq partakeReq);
+    protected abstract Result grabActivity(PartakeReq partakeReq, ActivityBillVO billVO);
 }
