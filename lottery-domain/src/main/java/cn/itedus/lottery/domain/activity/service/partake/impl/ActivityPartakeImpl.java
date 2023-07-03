@@ -55,7 +55,7 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "当前状态不可用");
         }
 
-        //校验：活动日期
+        //校验：活动日期，billVO是从数据库查出来的活动数据，partakeReq包含了请求时间，时间为：new now()
         if (billVO.getBeginDateTime().after(partakeReq.getPartakeDate()) || billVO.getEndDateTime().before(partakeReq.getPartakeDate())) {
             logger.warn("活动时间范围非可用 beginDateTime：{} endDateTime：{}", billVO.getBeginDateTime(), billVO.getEndDateTime());
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "活动时间范围非可用");

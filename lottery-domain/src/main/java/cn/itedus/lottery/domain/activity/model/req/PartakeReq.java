@@ -20,6 +20,7 @@ public class PartakeReq {
     public PartakeReq(String uId, Long activityId) {
         this.uId = uId;
         this.activityId = activityId;
+        //参与时间就是点击活动时的时间
         this.partakeDate = new Date();
     }
 
