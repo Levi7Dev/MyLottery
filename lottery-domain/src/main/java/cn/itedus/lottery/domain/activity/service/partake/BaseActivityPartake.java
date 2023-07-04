@@ -26,6 +26,7 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
     public PartakeResult doPartake(PartakeReq req) {
         // 1. 查询是否存在未执行抽奖领取活动单【user_take_activity 存在 state = 0，领取了但抽奖过程失败的，可以直接返回领取结果继续抽奖】
         UserTakeActivityVO userTakeActivityVO = this.queryNoConsumedTakeActivityOrder(req.getActivityId(), req.getuId());
+        //数据库中有参与过但失败的活动，返回参与活动结果，包括策略id，参与活动的id，继续进行抽奖
         if (null != userTakeActivityVO) {
             return buildPartakeResult(userTakeActivityVO.getStrategyId(), userTakeActivityVO.getTakeId());
         }

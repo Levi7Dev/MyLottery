@@ -67,7 +67,6 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
         userTakeActivity.setActivityName(activityName);
         userTakeActivity.setTakeDate(partakeDate);
         if (null == userTakeLeftCount) {
-            //每个用户最少可参与一次该活动
             userTakeActivity.setTakeCount(1);
         } else {
             userTakeActivity.setTakeCount(takeCount - userTakeLeftCount);
