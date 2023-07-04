@@ -19,4 +19,19 @@ public interface IUserTakeActivityDao {
     @DBRouter(key = "uId")
     void insert(UserTakeActivity userTakeActivity);
 
+    /**
+     * 锁定活动领取记录
+     * @param userTakeActivity
+     * @return
+     */
+    int lockTackActivity(UserTakeActivity userTakeActivity);
+
+    /**
+     * 查询是否存在未执行的抽奖活动
+     * @param userTakeActivity
+     * @return
+     */
+    @DBRouter
+    UserTakeActivity queryNoConsumedTakeActivityOrder(UserTakeActivity userTakeActivity);
+
 }

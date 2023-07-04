@@ -5,6 +5,8 @@ import cn.itedus.lottery.common.Constants;
 import cn.itedus.lottery.common.Result;
 import cn.itedus.lottery.domain.activity.model.req.PartakeReq;
 import cn.itedus.lottery.domain.activity.model.vo.ActivityBillVO;
+import cn.itedus.lottery.domain.activity.model.vo.DrawOrderVO;
+import cn.itedus.lottery.domain.activity.model.vo.UserTakeActivityVO;
 import cn.itedus.lottery.domain.activity.repository.IUserTakeActivityRepository;
 import cn.itedus.lottery.domain.activity.service.partake.BaseActivityPartake;
 import cn.itedus.lottery.domain.support.ids.IIdGenerator;
@@ -87,13 +89,18 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
         return Result.buildSuccessResult();
     }
 
+    @Override
+    protected UserTakeActivityVO queryNoConsumedTakeActivityOrder(Long activityId, String uId) {
+        return userTakeActivityRepository.queryNoConsumedTakeActivityOrder(activityId, uId);
+    }
+
     /**
      * 领取活动
      * @param partakeReq 参与活动请求
      * @return           领取结果
      */
     @Override
-    protected Result grabActivity(PartakeReq partakeReq, ActivityBillVO billVO) {
+    protected Result grabActivity(PartakeReq partakeReq, ActivityBillVO billVO, Long takeId) {
         try {
             //是编程式处理分库分表，如果在不需要使用事务的场景下，直接使用注解配置到DAO方法上即可。两个方式不能混用
             dbRouter.doRouter(partakeReq.getuId());
@@ -115,7 +122,6 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
                         return Result.buildResult(Constants.ResponseCode.NO_UPDATE);
                     }
                     //插入领取活动信息
-                    Long takeId = idGeneratorMap.get(Constants.Ids.SnowFlake).nextId();
                     userTakeActivityRepository.takeActivity(
                             billVO.getActivityId(),
                             billVO.getActivityName(),
@@ -132,6 +138,39 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
             });
         } finally {
             dbRouter.clear();
+        }
+    }
+
+    /**
+     * 保存奖品单
+     * @param drawOrderVO
+     * @return
+     */
+    @Override
+    public Result recordDrawOrder(DrawOrderVO drawOrderVO) {
+        try {
+            dbRouter.doRouter(drawOrderVO.getuId());
+            return transactionTemplate.execute(status -> {
+                try {
+                    //锁定领取记录
+                    int lockCount = userTakeActivityRepository.lockTackActivity(drawOrderVO.getuId(), drawOrderVO.getActivityId(), drawOrderVO.getTakeId());
+                    if (0 == lockCount) {
+                        status.setRollbackOnly();
+                        logger.error("记录中奖单，个人参与活动抽奖已消耗完 activityId：{} uId：{}", drawOrderVO.getActivityId(), drawOrderVO.getuId());
+                        return Result.buildResult(Constants.ResponseCode.NO_UPDATE);
+                    }
+
+                    //保存抽奖信息
+                    userTakeActivityRepository.saveUserStrategyExport(drawOrderVO);
+                } catch (DuplicateKeyException e) {
+                    status.setRollbackOnly();
+                    logger.error("领取活动，唯一索引冲突 activityId：{} uId：{}", drawOrderVO.getActivityId(), drawOrderVO.getuId(), e);
+                    return Result.buildResult(Constants.ResponseCode.INDEX_DUP);
+                }
+                return Result.buildSuccessResult();
+            });
+        } finally {
+
         }
     }
 }

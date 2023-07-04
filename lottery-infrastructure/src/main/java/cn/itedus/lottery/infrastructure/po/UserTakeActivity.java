@@ -3,7 +3,7 @@ package cn.itedus.lottery.infrastructure.po;
 import java.util.Date;
 
 /**
- * 用户领取活动表
+ * @description: 用户领取活动表
  */
 public class UserTakeActivity {
 
@@ -35,6 +35,18 @@ public class UserTakeActivity {
      * 领取次数
      */
     private Integer takeCount;
+
+    /**
+     * 策略ID
+     */
+    private Long strategyId;
+
+    /**
+     * 活动单使用状态 0未使用、1已使用
+     * Constants.TaskState
+     */
+    private Integer state;
+
     /**
      * 防重ID
      */
@@ -105,6 +117,22 @@ public class UserTakeActivity {
         this.takeCount = takeCount;
     }
 
+    public Long getStrategyId() {
+        return strategyId;
+    }
+
+    public void setStrategyId(Long strategyId) {
+        this.strategyId = strategyId;
+    }
+
+    public Integer getState() {
+        return state;
+    }
+
+    public void setState(Integer state) {
+        this.state = state;
+    }
+
     public String getUuid() {
         return uuid;
     }
@@ -128,5 +156,4 @@ public class UserTakeActivity {
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
-
 }
