@@ -81,6 +81,7 @@ public class ActivityRepository implements IActivityRepository {
         UserTakeActivityCount userTakeActivityCountReq = new UserTakeActivityCount();
         userTakeActivityCountReq.setuId(req.getuId());
         userTakeActivityCountReq.setActivityId(req.getActivityId());
+        //获取用户参与该活动的数量：包括活动的总数量，以及用户剩余的数量
         UserTakeActivityCount userTakeActivityCount = userTakeActivityCountDao.queryUserTakeActivityCount(userTakeActivityCountReq);
 
         // 封装结果信息
@@ -90,10 +91,15 @@ public class ActivityRepository implements IActivityRepository {
         activityBillVO.setActivityName(activity.getActivityName());
         activityBillVO.setBeginDateTime(activity.getBeginDateTime());
         activityBillVO.setEndDateTime(activity.getEndDateTime());
+        //每人可参与次数
         activityBillVO.setTakeCount(activity.getTakeCount());
         activityBillVO.setStockSurplusCount(activity.getStockSurplusCount());
         activityBillVO.setStrategyId(activity.getStrategyId());
         activityBillVO.setState(activity.getState());
+        //设置用户剩余可领取的数量（？？？？？，left_count应该是剩余数量的意思）
+        //userTakeActivityCount==null代表用户第一此参与，用户参与活动数量表中没有相关记录
+
+        //已领取数量
         activityBillVO.setUserTakeLeftCount(null == userTakeActivityCount ? null : userTakeActivityCount.getLeftCount());
 
         return activityBillVO;

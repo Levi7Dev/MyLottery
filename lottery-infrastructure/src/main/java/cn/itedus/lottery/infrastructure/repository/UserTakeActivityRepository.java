@@ -1,5 +1,6 @@
 package cn.itedus.lottery.infrastructure.repository;
 
+import cn.itedus.lottery.common.Constants;
 import cn.itedus.lottery.domain.activity.model.vo.DrawOrderVO;
 import cn.itedus.lottery.domain.activity.model.vo.UserTakeActivityVO;
 import cn.itedus.lottery.domain.activity.repository.IUserTakeActivityRepository;
@@ -42,11 +43,13 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
      */
     @Override
     public int subtractionLeftCount(Long activityId, String activityName, Integer takeCount, Integer userTakeLeftCount, String uId, Date partakeDate) {
+        //为空说明用户首次参与该活动，所以数据库剩余可领取次数为null
         if (null == userTakeLeftCount) {
             UserTakeActivityCount userTakeActivityCount = new UserTakeActivityCount();
             userTakeActivityCount.setuId(uId);
             userTakeActivityCount.setActivityId(activityId);
             userTakeActivityCount.setTotalCount(takeCount);
+            //设置可领取次数为每人可领取次数-1
             userTakeActivityCount.setLeftCount(takeCount - 1);
             userTakeActivityCountDao.insert(userTakeActivityCount);
             return 1;
@@ -58,19 +61,35 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
         }
     }
 
+    /**
+     *
+     * @param activityId        活动id
+     * @param activityName      活动名字
+     * @param takeCount         活动个人可领取次数
+     * @param userTakeLeftCount 活动个人剩余领取次数
+     * @param uId               用户id
+     * @param partakeDate       领取时间
+     * @param takeId            领取id
+     */
     @Override
-    public void takeActivity(Long activityId, String activityName, Integer takeCount, Integer userTakeLeftCount, String uId, Date partakeDate, Long takeId) {
+    public void takeActivity(Long activityId, String activityName, Long strategyId, Integer takeCount, Integer userTakeLeftCount, String uId, Date partakeDate, Long takeId) {
         UserTakeActivity userTakeActivity = new UserTakeActivity();
         userTakeActivity.setuId(uId);
         userTakeActivity.setTakeId(takeId);
         userTakeActivity.setActivityId(activityId);
         userTakeActivity.setActivityName(activityName);
         userTakeActivity.setTakeDate(partakeDate);
+        //用户剩余可参与活动次数==null，
         if (null == userTakeLeftCount) {
+            //user_take_activity表中的take_count代表领取次数
             userTakeActivity.setTakeCount(1);
         } else {
-            userTakeActivity.setTakeCount(takeCount - userTakeLeftCount);
+            //更新已领取次数为：活动每个人可领取次数-用户剩余领取次数+1
+            userTakeActivity.setTakeCount(takeCount - userTakeLeftCount + 1);
         }
+        userTakeActivity.setStrategyId(strategyId);
+        userTakeActivity.setState(Constants.TaskState.NO_USED.getCode());
+        //uuid用来防重，会拼接已经参与的次数的信息
         String uuid = uId + "_" + activityId + "_" + userTakeActivity.getTakeCount();
         userTakeActivity.setUuid(uuid);
 

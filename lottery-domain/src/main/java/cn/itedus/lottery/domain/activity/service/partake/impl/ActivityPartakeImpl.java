@@ -71,7 +71,7 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
 
         //校验：个人库存 - 个人活动可领取次数
         if (billVO.getUserTakeLeftCount() <= 0) {
-            logger.warn("个人领取次数非可用 userTakeLeftCount：{}", billVO.getUserTakeLeftCount());
+            logger.warn("个人领取次数非可用，userTakeLeftCount：{}", billVO.getUserTakeLeftCount());
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "个人领取次数非可用");
         }
 
@@ -80,6 +80,7 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
 
     @Override
     protected Result subtractionActivityStock(PartakeReq partakeReq) {
+        //相应的活动库存-1
         int count = activityRepository.subtractionActivityStock(partakeReq.getActivityId());
 
         if (0 == count) {
@@ -103,11 +104,12 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
     protected Result grabActivity(PartakeReq partakeReq, ActivityBillVO billVO, Long takeId) {
         try {
             //是编程式处理分库分表，如果在不需要使用事务的场景下，直接使用注解配置到DAO方法上即可。两个方式不能混用
+            //计算该用户产生的结果会落到哪个数据库上
             dbRouter.doRouter(partakeReq.getuId());
             //编程式事务，用的就是路由中间件提供的事务对象，通过这样的方式也可以更加方便的处理细节的回滚，而不需要抛异常处理。
-            return transactionTemplate.execute(transactionStatus ->{
+            return transactionTemplate.execute(transactionStatus -> {
                 try {
-                    //扣减个人已参与次数
+                    //扣减个人可参与次数
                     int updateCount = userTakeActivityRepository.subtractionLeftCount(
                             billVO.getActivityId(),
                             billVO.getActivityName(),
@@ -118,20 +120,21 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
 
                     if (0 == updateCount) {
                         transactionStatus.setRollbackOnly();
-                        logger.error("领取活动，扣减个人已参与次数失败 activityId：{} uId：{}", partakeReq.getActivityId(), partakeReq.getuId());
+                        logger.error("领取活动，扣减个人已参与次数失败，activityId：{}，uId：{}", partakeReq.getActivityId(), partakeReq.getuId());
                         return Result.buildResult(Constants.ResponseCode.NO_UPDATE);
                     }
                     //插入领取活动信息
                     userTakeActivityRepository.takeActivity(
                             billVO.getActivityId(),
                             billVO.getActivityName(),
+                            billVO.getStrategyId(),
                             billVO.getTakeCount(),
                             billVO.getUserTakeLeftCount(),
                             partakeReq.getuId(),
                             partakeReq.getPartakeDate(), takeId);
                 } catch (DuplicateKeyException e) {
                     transactionStatus.setRollbackOnly();
-                    logger.error("领取活动，唯一索引冲突 activityId：{} uId：{}", partakeReq.getActivityId(), partakeReq.getuId(), e);
+                    logger.error("领取活动，唯一索引冲突，activityId：{}，uId：{}", partakeReq.getActivityId(), partakeReq.getuId(), e);
                     return Result.buildResult(Constants.ResponseCode.INDEX_DUP);
                 }
                 return Result.buildSuccessResult();
@@ -170,7 +173,7 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
                 return Result.buildSuccessResult();
             });
         } finally {
-
+            dbRouter.clear();
         }
     }
 }
