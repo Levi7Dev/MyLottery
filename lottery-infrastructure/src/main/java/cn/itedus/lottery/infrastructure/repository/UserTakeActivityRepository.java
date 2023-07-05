@@ -31,16 +31,6 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
     private IUserStrategyExportDao userStrategyExportDao;
 
 
-    /**
-     * 扣减个人活动参与次数，数据库活动表中take_count代表每人可 参与次数
-     * @param activityId        活动id
-     * @param activityName      活动名字
-     * @param takeCount         活动个人可领取次数
-     * @param userTakeLeftCount 活动个人剩余领取次数
-     * @param uId               用户id
-     * @param partakeDate       领取时间
-     * @return
-     */
     @Override
     public int subtractionLeftCount(Long activityId, String activityName, Integer takeCount, Integer userTakeLeftCount, String uId, Date partakeDate) {
         //为空说明用户首次参与该活动，所以数据库剩余可领取次数为null
@@ -49,7 +39,6 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
             userTakeActivityCount.setuId(uId);
             userTakeActivityCount.setActivityId(activityId);
             userTakeActivityCount.setTotalCount(takeCount);
-            //设置可领取次数为每人可领取次数-1
             userTakeActivityCount.setLeftCount(takeCount - 1);
             userTakeActivityCountDao.insert(userTakeActivityCount);
             return 1;
@@ -136,9 +125,10 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
         UserTakeActivity userTakeActivity = new UserTakeActivity();
         userTakeActivity.setuId(uId);
         userTakeActivity.setActivityId(activityId);
+        //查询用户参与某活动的状态，是否有没有执行的活动，返回最新的未执行的活动
         UserTakeActivity noConsumedTakeActivityOrder = userTakeActivityDao.queryNoConsumedTakeActivityOrder(userTakeActivity);
 
-        //未查询到符合的领取单，直接返回null
+        //未查询到符合的领取单，直接返回null，说明用户没有未执行的活动，需要领取新的活动
         if (null == noConsumedTakeActivityOrder) {
             return null;
         }

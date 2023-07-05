@@ -57,20 +57,20 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "当前状态不可用");
         }
 
-        //校验：活动日期，billVO是从数据库查出来的活动数据，partakeReq包含了请求时间，时间为：new now()
+        //校验：活动日期，billVO是从数据库查出来的活动数据，partakeReq包含了请求时间，时间为：now()
         if (billVO.getBeginDateTime().after(partakeReq.getPartakeDate()) || billVO.getEndDateTime().before(partakeReq.getPartakeDate())) {
             logger.warn("活动时间范围非可用 beginDateTime：{} endDateTime：{}", billVO.getBeginDateTime(), billVO.getEndDateTime());
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "活动时间范围非可用");
         }
 
-        //校验库存
+        //校验：库存
         if (billVO.getStockSurplusCount() <= 0) {
             logger.warn("活动剩余库存非可用 stockSurplusCount：{}", billVO.getStockSurplusCount());
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "活动剩余库存非可用");
         }
 
-        //校验：个人库存 - 个人活动可领取次数
-        if (billVO.getUserTakeLeftCount() <= 0) {
+        // 校验：个人库存 - 个人活动剩余可领取次数
+        if (null != billVO.getUserTakeLeftCount() && billVO.getUserTakeLeftCount() <= 0) {
             logger.warn("个人领取次数非可用，userTakeLeftCount：{}", billVO.getUserTakeLeftCount());
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "个人领取次数非可用");
         }
@@ -109,7 +109,7 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
             //编程式事务，用的就是路由中间件提供的事务对象，通过这样的方式也可以更加方便的处理细节的回滚，而不需要抛异常处理。
             return transactionTemplate.execute(transactionStatus -> {
                 try {
-                    //扣减个人可参与次数
+                    //扣减个人已参与次数
                     int updateCount = userTakeActivityRepository.subtractionLeftCount(
                             billVO.getActivityId(),
                             billVO.getActivityName(),
