@@ -23,14 +23,14 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
 
     @Override
     public DrawResult doDrawExec(DrawReq req) {
-        //1.获取抽奖策略
+        //1.获取抽奖策略，会包含具体的抽奖算法标号（strategyRich会把策略表和策略明细表中的信息组合起来）
         StrategyRich strategyRich = super.queryStrategyRich(req.getStrategyId());
         StrategyBriefVO strategy = strategyRich.getStrategy();
 
         //2.校验抽奖策略是否已经初始化到内存
         this.checkAndInitRateData(req.getStrategyId(), strategy.getStrategyMode(), strategyRich.getStrategyDetailList());
 
-        //3.获取不在抽奖范围内的列表，包括：奖品库存为空、风控策略、临时调整等
+        //3.获取不在抽奖范围内的列表，根据策略id查找符合条件的奖品id集合（该策略对应的奖品都会被排除掉），包括：奖品库存为空、风控策略、临时调整等
         List<String> excludeAwardIds = this.queryExcludeAwardIds(req.getStrategyId());
 
         //4.执行抽奖算法

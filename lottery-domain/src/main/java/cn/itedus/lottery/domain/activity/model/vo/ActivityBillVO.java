@@ -30,7 +30,7 @@ public class ActivityBillVO {
 
     /** 每人可参与次数 */
     private Integer takeCount;
-    /** 已领取次数 */
+    /** 用户可领取次数 */
     private Integer userTakeLeftCount;
 
     public String getuId() {

@@ -33,16 +33,20 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
 
     @Override
     public int subtractionLeftCount(Long activityId, String activityName, Integer takeCount, Integer userTakeLeftCount, String uId, Date partakeDate) {
-        //为空说明用户首次参与该活动，所以数据库剩余可领取次数为null
+        //为空说明用户首次参与该活动，user_take_activity_count表没有该用户参与此活动记录，因此需要插入一条记录
         if (null == userTakeLeftCount) {
             UserTakeActivityCount userTakeActivityCount = new UserTakeActivityCount();
             userTakeActivityCount.setuId(uId);
             userTakeActivityCount.setActivityId(activityId);
+            //总次数就是该活动定义好的每个用户最多可参与的次数
             userTakeActivityCount.setTotalCount(takeCount);
+            //用户可参与次数为takeCount - 1，因为虽然该用户是首次参与该活动，但这次参与之后，后续可参与次数为takeCount - 1，即总次数 - 1
             userTakeActivityCount.setLeftCount(takeCount - 1);
+            //用户首次参与该活动，插入可领取信息
             userTakeActivityCountDao.insert(userTakeActivityCount);
             return 1;
         } else {
+            //不为空，说明用户以前参与过该活动，只需要在可领取活动次数上扣减一次即可
             UserTakeActivityCount userTakeActivityCount = new UserTakeActivityCount();
             userTakeActivityCount.setuId(uId);
             userTakeActivityCount.setActivityId(activityId);
@@ -68,12 +72,12 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
         userTakeActivity.setActivityId(activityId);
         userTakeActivity.setActivityName(activityName);
         userTakeActivity.setTakeDate(partakeDate);
-        //用户剩余可参与活动次数==null，
+        //用户剩余可参与活动次数==null，说明该用户首次参与该活动，将参与次数takeCount设置为1
         if (null == userTakeLeftCount) {
             //user_take_activity表中的take_count代表领取次数
             userTakeActivity.setTakeCount(1);
         } else {
-            //更新已领取次数为：活动每个人可领取次数-用户剩余领取次数+1
+            //用户不是首次参与该活动，更新已领取次数为：活动每个人可领取次数-用户剩余领取次数+1
             userTakeActivity.setTakeCount(takeCount - userTakeLeftCount + 1);
         }
         userTakeActivity.setStrategyId(strategyId);

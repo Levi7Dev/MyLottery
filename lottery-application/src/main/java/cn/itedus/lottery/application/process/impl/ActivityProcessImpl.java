@@ -44,6 +44,7 @@ public class ActivityProcessImpl implements IActivityProcess {
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())) {
             return new DrawProcessResult(partakeResult.getCode(), partakeResult.getInfo());
         }
+        //领取活动这一步会返回你领取活动的具体抽奖策略和参与抽奖的序列id
         Long strategyId = partakeResult.getStrategyId();
         Long takeId = partakeResult.getTakeId();
 
@@ -54,7 +55,7 @@ public class ActivityProcessImpl implements IActivityProcess {
         }
         DrawAwardInfo drawAwardInfo = drawResult.getDrawAwardInfo();
 
-        //3.结果落库
+        //3.结果落库（有bug，提示个人参与活动抽奖已消耗完，即回滚了事务，state状态为null）
         activityPartake.recordDrawOrder(buildDrawOrderVO(req, strategyId, takeId, drawAwardInfo));
 
         //4.发送MQ，触发发奖流程

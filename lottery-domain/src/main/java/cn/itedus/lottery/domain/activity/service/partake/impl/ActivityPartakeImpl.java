@@ -69,7 +69,7 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "活动剩余库存非可用");
         }
 
-        // 校验：个人库存 - 个人活动剩余可领取次数
+        // 校验：个人可领取次数：userTakeLeftCount为用户可参与次数
         if (null != billVO.getUserTakeLeftCount() && billVO.getUserTakeLeftCount() <= 0) {
             logger.warn("个人领取次数非可用，userTakeLeftCount：{}", billVO.getUserTakeLeftCount());
             return Result.buildResult(Constants.ResponseCode.UN_ERROR, "个人领取次数非可用");
@@ -84,7 +84,7 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
         int count = activityRepository.subtractionActivityStock(partakeReq.getActivityId());
 
         if (0 == count) {
-            logger.error("扣减活动库存失败 activityId：{}", partakeReq.getActivityId());
+            logger.error("扣减活动库存失败，activityId：{}", partakeReq.getActivityId());
             return Result.buildResult(Constants.ResponseCode.NO_UPDATE);
         }
         return Result.buildSuccessResult();
@@ -104,12 +104,12 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
     protected Result grabActivity(PartakeReq partakeReq, ActivityBillVO billVO, Long takeId) {
         try {
             //是编程式处理分库分表，如果在不需要使用事务的场景下，直接使用注解配置到DAO方法上即可。两个方式不能混用
-            //计算该用户产生的结果会落到哪个数据库上
+            //计算该用户产生的结果会落到哪个数据库上，结果保存在ThreadLocal中
             dbRouter.doRouter(partakeReq.getuId());
             //编程式事务，用的就是路由中间件提供的事务对象，通过这样的方式也可以更加方便的处理细节的回滚，而不需要抛异常处理。
             return transactionTemplate.execute(transactionStatus -> {
                 try {
-                    //扣减个人已参与次数
+                    //扣减个人可参与次数
                     int updateCount = userTakeActivityRepository.subtractionLeftCount(
                             billVO.getActivityId(),
                             billVO.getActivityName(),
@@ -117,7 +117,7 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
                             billVO.getUserTakeLeftCount(),
                             partakeReq.getuId(),
                             partakeReq.getPartakeDate());
-
+                    //扣减失败，回滚，然后直接返回，不执行后续插入用户参与活动记录的操作
                     if (0 == updateCount) {
                         transactionStatus.setRollbackOnly();
                         logger.error("领取活动，扣减个人已参与次数失败，activityId：{}，uId：{}", partakeReq.getActivityId(), partakeReq.getuId());
@@ -155,14 +155,14 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
             dbRouter.doRouter(drawOrderVO.getuId());
             return transactionTemplate.execute(status -> {
                 try {
-                    //锁定领取记录
+                    //锁定领取记录，将user_take_activity表中state字段设置为1，表示用户已成功参与了该活动
                     int lockCount = userTakeActivityRepository.lockTackActivity(drawOrderVO.getuId(), drawOrderVO.getActivityId(), drawOrderVO.getTakeId());
                     if (0 == lockCount) {
                         status.setRollbackOnly();
-                        logger.error("记录中奖单，个人参与活动抽奖已消耗完 activityId：{} uId：{}", drawOrderVO.getActivityId(), drawOrderVO.getuId());
+                        //如果原来state值就已经等于1了，说明用户这次参与该活动已经成功执行了，自然不允许再次继续执行该活动
+                        logger.error("记录中奖单，个人参与活动抽奖已消耗完 activityId：{}，uId：{}", drawOrderVO.getActivityId(), drawOrderVO.getuId());
                         return Result.buildResult(Constants.ResponseCode.NO_UPDATE);
                     }
-
                     //保存抽奖信息
                     userTakeActivityRepository.saveUserStrategyExport(drawOrderVO);
                 } catch (DuplicateKeyException e) {
