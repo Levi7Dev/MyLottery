@@ -38,7 +38,7 @@ public class RuleRepository implements IRuleRepository {
 
     @Override
     public TreeRuleRich queryTreeRuleRich(Long treeId) {
-        //规则树
+        //根据规则树id查询规则树所有信息
         RuleTree ruleTree = ruleTreeDao.queryRuleTreeByTreeId(treeId);
         TreeRootVO treeRootVO = new TreeRootVO();
         treeRootVO.setTreeId(ruleTree.getId());
@@ -50,6 +50,7 @@ public class RuleRepository implements IRuleRepository {
         List<RuleTreeNode> ruleTreeNodeList = ruleTreeNodeDao.queryRuleTreeNodeList(treeId);
         for (RuleTreeNode treeNode : ruleTreeNodeList) {
             List<TreeNodeLineVO> treeNodeLineInfoList = new ArrayList<>();
+            //1：树茎STEM；2：果实
             if (Constants.NodeType.STEM.equals(treeNode.getNodeType())) {
                 RuleTreeNodeLine ruleTreeNodeLineReq = new RuleTreeNodeLine();
                 ruleTreeNodeLineReq.setTreeId(treeId);
