@@ -16,7 +16,7 @@ public interface RuleTreeDao {
      * @param id ID
      * @return   规则树
      */
-    RuleTree queryRuleByTreeId(Long id);
+    RuleTree queryRuleTreeByTreeId(Long id);
 
     /**
      * 规则树简要信息查询

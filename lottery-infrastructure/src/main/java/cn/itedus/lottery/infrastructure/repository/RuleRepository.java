@@ -39,7 +39,7 @@ public class RuleRepository implements IRuleRepository {
     @Override
     public TreeRuleRich queryTreeRuleRich(Long treeId) {
         //规则树
-        RuleTree ruleTree = ruleTreeDao.queryRuleByTreeId(treeId);
+        RuleTree ruleTree = ruleTreeDao.queryRuleTreeByTreeId(treeId);
         TreeRootVO treeRootVO = new TreeRootVO();
         treeRootVO.setTreeId(ruleTree.getId());
         treeRootVO.setTreeRootNodeId(ruleTree.getTreeRootNodeId());
