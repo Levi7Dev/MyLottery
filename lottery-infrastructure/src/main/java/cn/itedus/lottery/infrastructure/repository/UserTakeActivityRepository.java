@@ -81,6 +81,7 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
             userTakeActivity.setTakeCount(takeCount - userTakeLeftCount + 1);
         }
         userTakeActivity.setStrategyId(strategyId);
+        //首次领取活动，增加一条领取记录，设置状态为0，后续锁定记录将state修改为1
         userTakeActivity.setState(Constants.TaskState.NO_USED.getCode());
         //uuid用来防重，会拼接已经参与的次数的信息
         String uuid = uId + "_" + activityId + "_" + userTakeActivity.getTakeCount();

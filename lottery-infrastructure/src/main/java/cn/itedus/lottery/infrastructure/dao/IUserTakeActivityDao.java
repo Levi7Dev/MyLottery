@@ -16,7 +16,7 @@ public interface IUserTakeActivityDao {
      * DBRouter是分库注解，key 是入参对象中的属性（用户id），用于提取作为分库分表路由字段使用，即该用户会存入哪个数据库哪张表
      * @param userTakeActivity
      */
-    @DBRouter(key = "uId")
+    //@DBRouter(key = "uId")
     void insert(UserTakeActivity userTakeActivity);
 
     /**
