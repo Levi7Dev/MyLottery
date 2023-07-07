@@ -4,9 +4,7 @@ import cn.itedus.lottery.infrastructure.po.RuleTree;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 规则树配置
- * @author Levi
- * @create 2023/7/7 16:36
+ * @description: 规则树配置DAO
  */
 @Mapper
 public interface RuleTreeDao {
