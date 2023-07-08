@@ -68,7 +68,7 @@ public class LotteryActivityBooth implements ILotteryActivityBooth {
 
             return drawRes;
         } catch (Exception e) {
-            logger.error("抽奖，失败 uId：{} activityId：{} reqJson：{}", drawReq.getuId(), drawReq.getActivityId(), JSON.toJSONString(drawReq), e);
+            logger.error("抽奖，失败了 uId：{} activityId：{} reqJson：{}", drawReq.getuId(), drawReq.getActivityId(), JSON.toJSONString(drawReq), e);
             return new DrawRes(Constants.ResponseCode.UN_ERROR.getCode(), Constants.ResponseCode.UN_ERROR.getInfo());
         }
     }
