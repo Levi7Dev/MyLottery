@@ -1,7 +1,7 @@
 package cn.itedus.lottery.domain.strategy.service.algorithm.impl;
 
 
-import cn.itedus.lottery.domain.strategy.model.vo.AwardRateInfo;
+import cn.itedus.lottery.domain.strategy.model.vo.AwardRateVO;
 import cn.itedus.lottery.domain.strategy.service.algorithm.BaseAlgorithm;
 import org.springframework.stereotype.Component;
 
@@ -33,15 +33,15 @@ public class EntiretyRateRandomDrawAlgorithm extends BaseAlgorithm {
         BigDecimal differenceDenominator = BigDecimal.ZERO;
 
         //排除不在抽奖范围的奖品id
-        List<AwardRateInfo> differenceAwardRateList = new ArrayList<>();
-        List<AwardRateInfo> awardRateIntervalValList = awardRateInfoMap.get(strategyId);
-        for (AwardRateInfo awardRateInfo : awardRateIntervalValList) {
-            String awardId = awardRateInfo.getAwardId();
+        List<AwardRateVO> differenceAwardRateList = new ArrayList<>();
+        List<AwardRateVO> awardRateIntervalValList = awardRateInfoMap.get(strategyId);
+        for (AwardRateVO awardRateVO : awardRateIntervalValList) {
+            String awardId = awardRateVO.getAwardId();
             if (excludeAwardIds.contains(awardId)) {
                 continue;
             }
-            differenceAwardRateList.add(awardRateInfo);
-            differenceDenominator = differenceDenominator.add(awardRateInfo.getAwardRate());
+            differenceAwardRateList.add(awardRateVO);
+            differenceDenominator = differenceDenominator.add(awardRateVO.getAwardRate());
         }
 
         //前置判断
@@ -55,13 +55,13 @@ public class EntiretyRateRandomDrawAlgorithm extends BaseAlgorithm {
         //循环获取奖品
         String awardId = "";
         int cursorVal = 0;
-        for (AwardRateInfo awardRateInfo : differenceAwardRateList) {
-            int rateVal = awardRateInfo.getAwardRate()
+        for (AwardRateVO awardRateVO : differenceAwardRateList) {
+            int rateVal = awardRateVO.getAwardRate()
                     .divide(differenceDenominator, 2, BigDecimal.ROUND_UP)
                     .multiply(new BigDecimal(100))
                     .intValue();
             if (randomVal <= cursorVal + rateVal) {
-                awardId = awardRateInfo.getAwardId();
+                awardId = awardRateVO.getAwardId();
                 break;
             }cursorVal += rateVal;
         }

@@ -1,6 +1,6 @@
 package cn.itedus.lottery.domain.strategy.service.algorithm;
 
-import cn.itedus.lottery.domain.strategy.model.vo.AwardRateInfo;
+import cn.itedus.lottery.domain.strategy.model.vo.AwardRateVO;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public interface IDrawAlgorithm {
      * @param[2] awardRateInfoList  奖品概率配置集合
      * @time 2023/6/23 15:58
      */
-    void initRateTuple(Long strategyId, List<AwardRateInfo> awardRateInfoList);
+    void initRateTuple(Long strategyId, List<AwardRateVO> awardRateVOList);
 
     /**
      * 判断是否已经做了数据初始化

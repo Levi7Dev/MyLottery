@@ -8,7 +8,7 @@ import cn.itedus.lottery.domain.award.service.factory.DistributionGoodsFactory;
 import cn.itedus.lottery.domain.award.service.goods.IDistributionGoods;
 import cn.itedus.lottery.domain.strategy.model.req.DrawReq;
 import cn.itedus.lottery.domain.strategy.model.res.DrawResult;
-import cn.itedus.lottery.domain.strategy.model.vo.DrawAwardInfo;
+import cn.itedus.lottery.domain.strategy.model.vo.DrawAwardVO;
 import cn.itedus.lottery.domain.strategy.service.draw.IDrawExec;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,11 +56,11 @@ public class SpringRunnerTest {
             return;
         }
         //中奖则查找中奖信息
-        DrawAwardInfo drawAwardInfo = drawResult.getDrawAwardInfo();
+        DrawAwardVO drawAwardVO = drawResult.getDrawAwardInfo();
         GoodsReq goodsReq = new GoodsReq(drawResult.getuId(), "2109313442431",
-                drawAwardInfo.getAwardId(), drawAwardInfo.getAwardName(), drawAwardInfo.getAwardContent());
+                drawAwardVO.getAwardId(), drawAwardVO.getAwardName(), drawAwardVO.getAwardContent());
         //根据awardType（1:文字描述、2:兑换码、3:优惠券、4:实物奖品） 从抽奖工厂中获取对应的发奖操作
-        IDistributionGoods distributionGoodsService = distributionGoodsFactory.getDistributionGoodsService(drawAwardInfo.getAwardType());
+        IDistributionGoods distributionGoodsService = distributionGoodsFactory.getDistributionGoodsService(drawAwardVO.getAwardType());
         DistributionRes distributionRes = distributionGoodsService.doDistribution(goodsReq);
 
         logger.info("测试结果：{}", JSON.toJSONString(distributionRes));
