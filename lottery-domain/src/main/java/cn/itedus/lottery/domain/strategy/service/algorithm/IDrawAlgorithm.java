@@ -13,7 +13,7 @@ public interface IDrawAlgorithm {
      * @param[2] awardRateInfoList  奖品概率配置集合
      * @time 2023/6/23 15:58
      */
-    void initRateTuple(Long strategyId, List<AwardRateVO> awardRateVOList);
+    void initRateTuple(Long strategyId, Integer strategyMode, List<AwardRateVO> awardRateVOList);
 
     /**
      * 判断是否已经做了数据初始化
@@ -21,7 +21,7 @@ public interface IDrawAlgorithm {
      * @return boolean
      * @time 2023/6/23 16:01
      */
-    boolean isExistRateTuple(Long strategyId);
+    boolean isExist(Long strategyId);
 
     /**
      * 无论任何一种抽奖算法的使用，都以这个接口作为标准的抽奖接口进行抽奖

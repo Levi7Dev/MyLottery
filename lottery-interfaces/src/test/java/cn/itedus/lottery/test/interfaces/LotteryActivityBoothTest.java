@@ -35,7 +35,6 @@ public class LotteryActivityBoothTest {
         DrawRes drawRes = lotteryActivityBooth.doDraw(drawReq);
         logger.info("请求参数：{}", JSON.toJSONString(drawReq));
         logger.info("测试结果：{}", JSON.toJSONString(drawRes));
-
     }
 
     @Test

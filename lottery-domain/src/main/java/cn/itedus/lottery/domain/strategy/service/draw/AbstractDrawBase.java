@@ -41,15 +41,10 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
     }
 
     public void checkAndInitRateData(Long strategyId, Integer strategyMode, List<StrategyDetailBriefVO> strategyDetailList) {
-        //非单项概率，不需要存入缓存
-        if (!Constants.StrategyMode.SINGLE.getCode().equals(strategyMode)) {
-            return;
-        }
-
         IDrawAlgorithm drawAlgorithm = drawAlgorithmGroup.get(strategyMode);
 
         //已经初始化过数据，不必重复初始化
-        if (drawAlgorithm.isExistRateTuple(strategyId)) {
+        if (drawAlgorithm.isExist(strategyId)) {
             return;
         }
 
@@ -58,7 +53,7 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
             awardRateVOList.add(new AwardRateVO(strategyDetail.getAwardId(), strategyDetail.getAwardRate()));
         }
 
-        drawAlgorithm.initRateTuple(strategyId, awardRateVOList);
+        drawAlgorithm.initRateTuple(strategyId, strategyMode, awardRateVOList);
     }
 
     /**

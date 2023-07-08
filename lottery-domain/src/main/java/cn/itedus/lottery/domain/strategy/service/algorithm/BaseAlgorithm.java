@@ -27,7 +27,11 @@ public abstract class BaseAlgorithm implements IDrawAlgorithm{
 
 
     @Override
-    public void initRateTuple(Long strategyId, List<AwardRateVO> awardRateVOList) {
+    public void initRateTuple(Long strategyId, Integer strategyMode, List<AwardRateVO> awardRateVOList) {
+        // 前置判断
+        if (isExist(strategyId)){
+            return;
+        }
         //保存奖品概率信息
         awardRateInfoMap.put(strategyId, awardRateVOList);
         String[] rateTuple = rateTupleMap.computeIfAbsent(strategyId, k -> new String[RATE_TUPLE_LENGTH]);
@@ -44,7 +48,7 @@ public abstract class BaseAlgorithm implements IDrawAlgorithm{
     }
 
     @Override
-    public boolean isExistRateTuple(Long strategyId) {
+    public boolean isExist(Long strategyId) {
         return rateTupleMap.containsKey(strategyId);
     }
 
