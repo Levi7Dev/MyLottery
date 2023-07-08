@@ -47,7 +47,7 @@ public class ActivityProcessImpl implements IActivityProcess {
 
     @Override
     public DrawProcessResult doDrawProcess(DrawProcessReq req) {
-        //1.领取活动
+        //1.领取活动，对活动的剩余库存，用户可领取次数进行扣减一个单位，并插入一条参与活动记录
         PartakeResult partakeResult = activityPartake.doPartake(new PartakeReq(req.getuId(), req.getActivityId()));
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())) {
             return new DrawProcessResult(partakeResult.getCode(), partakeResult.getInfo());
@@ -56,14 +56,14 @@ public class ActivityProcessImpl implements IActivityProcess {
         Long strategyId = partakeResult.getStrategyId();
         Long takeId = partakeResult.getTakeId();
 
-        //2.执行抽奖
+        //2.执行抽奖，传入用户id，策略id，参与活动id
         DrawResult drawResult = drawExec.doDrawExec(new DrawReq(req.getuId(), strategyId, String.valueOf(takeId)));
         if (Constants.DrawState.FAIL.getCode().equals(drawResult.getDrawState())) {
             return new DrawProcessResult(Constants.ResponseCode.LOSING_DRAW.getCode(), Constants.ResponseCode.LOSING_DRAW.getInfo());
         }
         DrawAwardVO drawAwardVO = drawResult.getDrawAwardInfo();
 
-        //3.结果落库（有bug，提示个人参与活动抽奖已消耗完，即回滚了事务，state状态为null）
+        //3.结果落库
         activityPartake.recordDrawOrder(buildDrawOrderVO(req, strategyId, takeId, drawAwardVO));
 
         //4.发送MQ，触发发奖流程

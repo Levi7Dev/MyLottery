@@ -24,6 +24,7 @@ public class LotteryActivityBoothTest {
 
     private Logger logger = LoggerFactory.getLogger(LotteryActivityBoothTest.class);
 
+    //接口定义在rpc层，实现类在接口层，对外暴露，应用层实现对业务的流程组合
     @Resource
     private ILotteryActivityBooth lotteryActivityBooth;
 

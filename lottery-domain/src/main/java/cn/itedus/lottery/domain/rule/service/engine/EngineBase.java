@@ -34,7 +34,7 @@ public abstract class EngineBase extends EngineConfig implements EngineFilter {
         Long rootNodeId = treeRoot.getTreeRootNodeId();
         TreeNodeVO treeNodeInfo = treeNodeMap.get(rootNodeId);
 
-        //节点类型【NodeType】：1叶子、2果实
+        //节点类型【NodeType】：1叶子（决策依据）、2果实（最终可参与的活动id）
         while (Constants.NodeType.STEM.equals(treeNodeInfo.getNodeType())) {
             String ruleKey = treeNodeInfo.getRuleKey();
             LogicFilter logicFilter = logicFilterMap.get(ruleKey);
