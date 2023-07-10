@@ -58,6 +58,7 @@ public class ActivityProcessImpl implements IActivityProcess {
     @Override
     public DrawProcessResult doDrawProcess(DrawProcessReq req) {
         //1.领取活动，对活动的剩余库存，用户可领取次数进行扣减一个单位，并插入一条参与活动记录
+        //PartakeReq中参与活动时间为now()
         PartakeResult partakeResult = activityPartake.doPartake(new PartakeReq(req.getuId(), req.getActivityId()));
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())) {
             return new DrawProcessResult(partakeResult.getCode(), partakeResult.getInfo());

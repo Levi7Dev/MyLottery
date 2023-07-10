@@ -84,7 +84,7 @@ public class ActivityRepository implements IActivityRepository {
         //查询用户参与该活动的数量：包括活动每个人可参与的最大数量，userTakeLeftCount为用户可参与次数
         UserTakeActivityCount userTakeActivityCount = userTakeActivityCountDao.queryUserTakeActivityCount(userTakeActivityCountReq);
 
-        // 封装结果信息
+        // 封装结果信息，不管剩余数量为多少，都封装返回
         ActivityBillVO activityBillVO = new ActivityBillVO();
         activityBillVO.setuId(req.getuId());
         activityBillVO.setActivityId(req.getActivityId());

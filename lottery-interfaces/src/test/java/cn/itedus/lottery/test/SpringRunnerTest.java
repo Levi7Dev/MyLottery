@@ -57,7 +57,7 @@ public class SpringRunnerTest {
         }
         //中奖则查找中奖信息
         DrawAwardVO drawAwardVO = drawResult.getDrawAwardInfo();
-        GoodsReq goodsReq = new GoodsReq(drawResult.getuId(), "2109313442431",
+        GoodsReq goodsReq = new GoodsReq(drawResult.getuId(), 2109313442431L,
                 drawAwardVO.getAwardId(), drawAwardVO.getAwardName(), drawAwardVO.getAwardContent());
         //根据awardType（1:文字描述、2:兑换码、3:优惠券、4:实物奖品） 从抽奖工厂中获取对应的发奖操作
         IDistributionGoods distributionGoodsService = distributionGoodsFactory.getDistributionGoodsService(drawAwardVO.getAwardType());
