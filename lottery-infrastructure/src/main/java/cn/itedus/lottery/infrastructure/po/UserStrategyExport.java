@@ -3,7 +3,7 @@ package cn.itedus.lottery.infrastructure.po;
 import java.util.Date;
 
 /**
- * 策略计算结果表
+ * @description: 用户策略计算结果表
  */
 public class UserStrategyExport {
 
@@ -35,6 +35,8 @@ public class UserStrategyExport {
     private String awardContent;
     /** 防重ID */
     private String uuid;
+    /** 消息发送状态（0未发送、1发送成功、2发送失败） */
+    private Integer MqState;
     /** 创建时间 */
     private Date createTime;
     /** 更新时间 */
@@ -152,6 +154,14 @@ public class UserStrategyExport {
         this.uuid = uuid;
     }
 
+    public Integer getMqState() {
+        return MqState;
+    }
+
+    public void setMqState(Integer mqState) {
+        MqState = mqState;
+    }
+
     public Date getCreateTime() {
         return createTime;
     }
@@ -167,5 +177,4 @@ public class UserStrategyExport {
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
-
 }

@@ -15,23 +15,12 @@ public class CouponGoods extends DistributionBase implements IDistributionGoods 
 
     @Override
     public DistributionRes doDistribution(GoodsReq req) {
-        super.updateUserAwardState(
-                req.getuId(),
-                req.getOrderId(),
-                req.getAwardId(),
-                Constants.AwardState.SUCCESS.getCode(),
-                Constants.AwardState.SUCCESS.getInfo()
-        );
+        // 模拟调用优惠券发放接口
+        logger.info("模拟调用优惠券发放接口 uId：{} awardContent：{}", req.getuId(), req.getAwardContent());
 
-        return new DistributionRes(
-                req.getuId(),
-                Constants.AwardState.SUCCESS.getCode(),
-                Constants.AwardState.SUCCESS.getInfo()
-        );
-    }
+        // 更新用户领奖结果
+        super.updateUserAwardState(req.getuId(), req.getOrderId(), req.getAwardId(), Constants.GrantState.COMPLETE.getCode());
 
-    @Override
-    public Integer getDistributionGoodsName() {
-        return Constants.AwardType.CouponGoods.getCode();
+        return new DistributionRes(req.getuId(), Constants.AwardState.SUCCESS.getCode(), Constants.AwardState.SUCCESS.getInfo());
     }
 }
