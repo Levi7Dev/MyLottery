@@ -29,7 +29,7 @@ public class ActivityProcessTest {
     public void test_doDrawProcess() {
         DrawProcessReq req = new DrawProcessReq();
         //请求头里面主要包含用户id和参与的活动id信息
-        req.setuId("levi");
+        req.setuId("levi2");
         req.setActivityId(100001L);
         DrawProcessResult drawProcessResult = activityProcess.doDrawProcess(req);
 

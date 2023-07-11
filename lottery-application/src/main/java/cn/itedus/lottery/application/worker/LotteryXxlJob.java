@@ -109,7 +109,6 @@ public class LotteryXxlJob {
             logger.info("扫描用户抽奖奖品发放MQ状态[Table = 2*4] 结束 params is null");
             return;
         }
-
         //获取数据库下的分表数
         int tbCount = dbRouter.tbCount();
         //循环扫描指定的库
@@ -125,7 +124,7 @@ public class LotteryXxlJob {
 
             //扫描每张分表
             for (int i = 0; i < tbCount; i++) {
-                List<InvoiceVO> invoiceVOList = activityPartake.scanInvoiceMqState(dbCount, tbCount);
+                List<InvoiceVO> invoiceVOList = activityPartake.scanInvoiceMqState(dbCount, i);
                 logger.info("扫描用户抽奖奖品发放MQ状态[Table = 2*4] 扫描库：{} 扫描表：{} 扫描数：{}", dbCount, i, invoiceVOList.size());
                 //重发MQ消息
                 for (InvoiceVO invoiceVO : invoiceVOList) {
