@@ -4,6 +4,9 @@ import cn.itedus.lottery.common.Result;
 import cn.itedus.lottery.domain.activity.model.req.PartakeReq;
 import cn.itedus.lottery.domain.activity.model.res.PartakeResult;
 import cn.itedus.lottery.domain.activity.model.vo.DrawOrderVO;
+import cn.itedus.lottery.domain.activity.model.vo.InvoiceVO;
+
+import java.util.List;
 
 /**
  * 抽奖活动参与接口
@@ -31,5 +34,15 @@ public interface IActivityPartake {
      * @param mqState
      */
     void updateInvoiceMqState(String uId, Long orderId, Integer mqState);
+
+    /**
+     * 扫描发货单MQ状态，即中奖记录表中mq状态（0未发送、1发送成功、2发送失败）
+     * 把发送失败的记录重新再发一次
+     *
+     * @param dbCount   指定的分库
+     * @param tbCount   指定的分表
+     * @return  需要重发的发货单集合
+     */
+    List<InvoiceVO> scanInvoiceMqState(int dbCount, int tbCount);
 
 }

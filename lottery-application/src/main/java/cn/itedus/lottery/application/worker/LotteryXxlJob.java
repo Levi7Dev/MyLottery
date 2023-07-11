@@ -1,15 +1,23 @@
 package cn.itedus.lottery.application.worker;
 
+import cn.bugstack.middleware.db.router.strategy.IDBRouterStrategy;
+import cn.itedus.lottery.application.mq.producer.KafkaProducer;
 import cn.itedus.lottery.common.Constants;
 import cn.itedus.lottery.common.Result;
 import cn.itedus.lottery.domain.activity.model.vo.ActivityVO;
+import cn.itedus.lottery.domain.activity.model.vo.InvoiceVO;
 import cn.itedus.lottery.domain.activity.service.deploy.IActivityDeploy;
+import cn.itedus.lottery.domain.activity.service.partake.IActivityPartake;
 import cn.itedus.lottery.domain.activity.service.stateflow.IStateHandler;
 import com.alibaba.fastjson.JSON;
+import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -30,6 +38,16 @@ public class LotteryXxlJob {
 
     @Resource
     private IStateHandler stateHandler;
+
+    @Resource
+    private IActivityPartake activityPartake;
+
+    @Resource
+    private IDBRouterStrategy dbRouter;
+
+    @Resource
+    private KafkaProducer kafkaProducer;
+
 
     @XxlJob("lotteryActivityStateJobHandler")
     public void lotteryActivityStateJobHandler() throws Exception {
@@ -72,5 +90,62 @@ public class LotteryXxlJob {
             activityVOList = activityDeploy.scanToDoActivityList(activityVO.getId());
         }
         logger.info("扫描活动状态结束");
+    }
+
+    @XxlJob("lotteryOrderMQStateJobHandler")
+    public void lotteryOrderMQStateJobHandler() throws Exception {
+        //验证参数，哪个数据库
+        String jobParam = XxlJobHelper.getJobParam();
+        if (null == jobParam) {
+            logger.info("扫描用户抽奖奖品发放MQ状态[Table = 2*4] 错误 params is null");
+            return;
+        }
+
+        //获取分布式任务参数信息，数据库编号以逗号隔开，不要包含空格等符号
+        String[] params = jobParam.split(",");
+        logger.info("扫描用户抽奖奖品发放MQ状态[Table = 2*4] 开始 params：{}", JSON.toJSONString(params));
+
+        if (params.length == 0) {
+            logger.info("扫描用户抽奖奖品发放MQ状态[Table = 2*4] 结束 params is null");
+            return;
+        }
+
+        //获取数据库下的分表数
+        int tbCount = dbRouter.tbCount();
+        //循环扫描指定的库
+        for (String param : params) {
+            //当前任务扫描的指定分库，即分库编号
+            int dbCount = Integer.parseInt(param);
+
+            // 判断配置指定扫描库数，是否存在
+            if (dbCount > dbRouter.dbCount()) {
+                logger.info("扫描用户抽奖奖品发放MQ状态[Table = 2*4] 结束 dbCount not exist");
+                continue;
+            }
+
+            //扫描每张分表
+            for (int i = 0; i < tbCount; i++) {
+                List<InvoiceVO> invoiceVOList = activityPartake.scanInvoiceMqState(dbCount, tbCount);
+                logger.info("扫描用户抽奖奖品发放MQ状态[Table = 2*4] 扫描库：{} 扫描表：{} 扫描数：{}", dbCount, i, invoiceVOList.size());
+                //重发MQ消息
+                for (InvoiceVO invoiceVO : invoiceVOList) {
+                    ListenableFuture<SendResult<String, Object>> future = kafkaProducer.sendLotteryInvoice(invoiceVO);
+                    future.addCallback(new ListenableFutureCallback<SendResult<String, Object>>() {
+                        @Override
+                        public void onFailure(Throwable throwable) {
+                            // MQ 消息发送失败，更新数据库表 user_strategy_export.mq_state = 2 【等待定时任务扫码补偿MQ消息】
+                            activityPartake.updateInvoiceMqState(invoiceVO.getuId(), invoiceVO.getOrderId(), Constants.MQState.FAIL.getCode());
+                        }
+
+                        @Override
+                        public void onSuccess(SendResult<String, Object> stringObjectSendResult) {
+                            // MQ 消息发送完成，更新数据库表 user_strategy_export.mq_state = 1
+                            activityPartake.updateInvoiceMqState(invoiceVO.getuId(), invoiceVO.getOrderId(), Constants.MQState.COMPLETE.getCode());
+                        }
+                    });
+                }
+            }
+        }
+        logger.info("扫描用户抽奖奖品发放MQ状态[Table = 2*4] 完成 param：{}", JSON.toJSONString(params));
     }
 }
