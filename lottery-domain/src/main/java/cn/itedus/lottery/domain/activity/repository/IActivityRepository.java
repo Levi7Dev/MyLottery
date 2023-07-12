@@ -2,6 +2,7 @@ package cn.itedus.lottery.domain.activity.repository;
 
 import cn.itedus.lottery.common.Constants;
 import cn.itedus.lottery.domain.activity.model.req.PartakeReq;
+import cn.itedus.lottery.domain.activity.model.res.StockResult;
 import cn.itedus.lottery.domain.activity.model.vo.*;
 
 import java.util.List;
@@ -68,4 +69,24 @@ public interface IActivityRepository {
      * @return 待处理的活动集合
      */
     List<ActivityVO> scanToDoActivityList(Long id);
+
+    /**
+     * 扣减活动库存，通过redis
+     * @param uId           用户id
+     * @param activityId    活动id
+     * @param stockCount    活动总库存
+     * @return              扣减结果（库存key，剩余库存大小）
+     */
+    StockResult subtractionActivityStockByRedis(String uId, Long activityId, Integer stockCount);
+
+    /**
+     * 恢复活动库存，通过redis
+     * 如果活动异常，则需要进行缓存库存恢复，只保证不超卖的特性，不保证一定能恢复占用库存，另外最终可以由任务进行补偿库存
+     *
+     * @param activityId    活动id
+     * @param tokenKey      分布式key 用于清理
+     * @param code          状态
+     */
+    void recoverActivityCacheStockByRedis(Long activityId, String tokenKey, String code);
+
 }

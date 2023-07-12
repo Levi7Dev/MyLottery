@@ -2,6 +2,7 @@ package cn.itedus.lottery.infrastructure.repository;
 
 import cn.itedus.lottery.common.Constants;
 import cn.itedus.lottery.domain.activity.model.req.PartakeReq;
+import cn.itedus.lottery.domain.activity.model.res.StockResult;
 import cn.itedus.lottery.domain.activity.model.vo.*;
 import cn.itedus.lottery.domain.activity.repository.IActivityRepository;
 import cn.itedus.lottery.infrastructure.dao.*;
@@ -124,5 +125,15 @@ public class ActivityRepository implements IActivityRepository {
             activityVOList.add(activityVO);
         }
         return activityVOList;
+    }
+
+    @Override
+    public StockResult subtractionActivityStockByRedis(String uId, Long activityId, Integer stockCount) {
+        return null;
+    }
+
+    @Override
+    public void recoverActivityCacheStockByRedis(Long activityId, String tokenKey, String code) {
+
     }
 }
