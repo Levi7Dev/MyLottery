@@ -4,6 +4,7 @@ import cn.itedus.lottery.common.Constants;
 import cn.itedus.lottery.common.Result;
 import cn.itedus.lottery.domain.activity.model.req.PartakeReq;
 import cn.itedus.lottery.domain.activity.model.res.PartakeResult;
+import cn.itedus.lottery.domain.activity.model.res.StockResult;
 import cn.itedus.lottery.domain.activity.model.vo.ActivityBillVO;
 import cn.itedus.lottery.domain.activity.model.vo.UserTakeActivityVO;
 import cn.itedus.lottery.domain.support.ids.IIdGenerator;
@@ -30,7 +31,7 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
         UserTakeActivityVO userTakeActivityVO = this.queryNoConsumedTakeActivityOrder(req.getActivityId(), req.getuId());
         //数据库中有参与过但失败的活动，返回参与活动结果，包括策略id，参与活动的id，继续进行抽奖
         if (null != userTakeActivityVO) {
-            return buildPartakeResult(userTakeActivityVO.getStrategyId(), userTakeActivityVO.getTakeId());
+            return buildPartakeResult(userTakeActivityVO.getStrategyId(), userTakeActivityVO.getTakeId(), Constants.ResponseCode.NOT_CONSUMED_TAKE);
         }
 
         //2. 领取新的活动，需要查询该活动的基本信息
@@ -43,10 +44,16 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
             return new PartakeResult(checkResult.getCode(), checkResult.getInfo());
         }
 
-        //4. 扣减库存活动【目前为直接对配置库中的 lottery.activity 直接操作表扣减库存，后续优化为Redis扣减】
+        //4. 扣减活动库存，通过Redis【活动库存扣减编号，作为锁的Key，缩小颗粒度】 Begin
         //此处扣减活动的库存已经进行了，如果后续第5步出现异常回滚，活动剩余库存不会回滚，已经被扣了一次
-        Result subtractionActivityResult = this.subtractionActivityStock(req);
+        StockResult subtractionActivityResult = this.subtractionActivityStockByRedis(req.getuId(),
+                req.getActivityId(), activityBillVO.getStockCount());
+
+        //Result subtractionActivityResult = this.subtractionActivityStock(req);    //从数据库中扣减库存（被redis替代）
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(subtractionActivityResult.getCode())) {
+            //失败需要恢复缓存
+            this.recoverActivityCacheStockByRedis(req.getActivityId(), subtractionActivityResult.getStockKey(),
+                    subtractionActivityResult.getCode());
             return new PartakeResult(subtractionActivityResult.getCode(), subtractionActivityResult.getInfo());
         }
 
@@ -57,7 +64,12 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
             return new PartakeResult(grabResult.getCode(), grabResult.getInfo());
         }
 
-        return buildPartakeResult(activityBillVO.getStrategyId(), takeId);
+        //6. 扣减活动库存，通过Redis End
+        this.recoverActivityCacheStockByRedis(req.getActivityId(), subtractionActivityResult.getStockKey(),
+                Constants.ResponseCode.SUCCESS.getCode());
+
+        return buildPartakeResult(activityBillVO.getStrategyId(), takeId, activityBillVO.getStockCount(),
+                subtractionActivityResult.getStockSurplusCount(), Constants.ResponseCode.SUCCESS);
     }
 
     /**
@@ -85,6 +97,25 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
     protected abstract Result subtractionActivityStock(PartakeReq partakeReq);
 
     /**
+     * 扣减活动库存，通过redis
+     * @param uId
+     * @param activityId
+     * @param stockCount    总库存
+     * @return              扣减结果
+     */
+    protected abstract StockResult subtractionActivityStockByRedis(String uId, Long activityId, Integer stockCount);
+
+    /**
+     * 恢复活动库存，通过Redis
+     * 【如果活动异常，则需要进行缓存库存恢复，只保证不超卖的特性，不保证一定能恢复占用库存，另外最终可以由任务进行补偿库存】
+     *
+     * @param activityId 活动ID
+     * @param tokenKey   分布式 KEY 用于清理
+     * @param code       状态
+     */
+    protected abstract void recoverActivityCacheStockByRedis(Long activityId, String tokenKey, String code);
+
+    /**
      * 领取活动
      * @param partakeReq 参与活动请求
      * @return           领取结果
@@ -92,13 +123,34 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
     protected abstract Result grabActivity(PartakeReq partakeReq, ActivityBillVO billVO, Long takeId);
 
     /**
-     * 封装结果，返回策略ID，用于继续完成抽奖步骤
-     * @param strategyId
-     * @param takeId
-     * @return
+     * 封装结果【返回的策略ID，用于继续完成抽奖步骤】
+     *
+     * @param strategyId        策略ID
+     * @param takeId            领取ID
+     * @param stockCount        库存
+     * @param stockSurplusCount 剩余库存
+     * @param code              状态码
+     * @return 封装结果
      */
-    private PartakeResult buildPartakeResult(Long strategyId, Long takeId) {
-        PartakeResult partakeResult = new PartakeResult(Constants.ResponseCode.SUCCESS.getCode(), Constants.ResponseCode.SUCCESS.getInfo());
+    private PartakeResult buildPartakeResult(Long strategyId, Long takeId, Integer stockCount, Integer stockSurplusCount, Constants.ResponseCode code) {
+        PartakeResult partakeResult = new PartakeResult(code.getCode(), code.getInfo());
+        partakeResult.setStrategyId(strategyId);
+        partakeResult.setTakeId(takeId);
+        partakeResult.setStockCount(stockCount);
+        partakeResult.setStockSurplusCount(stockSurplusCount);
+        return partakeResult;
+    }
+
+    /**
+     * 封装结果【返回的策略ID，用于继续完成抽奖步骤】
+     *
+     * @param strategyId 策略ID
+     * @param takeId     领取ID
+     * @param code       状态码
+     * @return 封装结果
+     */
+    private PartakeResult buildPartakeResult(Long strategyId, Long takeId, Constants.ResponseCode code) {
+        PartakeResult partakeResult = new PartakeResult(code.getCode(), code.getInfo());
         partakeResult.setStrategyId(strategyId);
         partakeResult.setTakeId(takeId);
         return partakeResult;

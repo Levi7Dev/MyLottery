@@ -9,6 +9,7 @@ import cn.itedus.lottery.common.Constants;
 import cn.itedus.lottery.common.Result;
 import cn.itedus.lottery.domain.activity.model.req.PartakeReq;
 import cn.itedus.lottery.domain.activity.model.res.PartakeResult;
+import cn.itedus.lottery.domain.activity.model.vo.ActivityPartakeRecordVO;
 import cn.itedus.lottery.domain.activity.model.vo.DrawOrderVO;
 import cn.itedus.lottery.domain.activity.model.vo.InvoiceVO;
 import cn.itedus.lottery.domain.activity.service.partake.IActivityPartake;
@@ -60,28 +61,42 @@ public class ActivityProcessImpl implements IActivityProcess {
         //1.领取活动，对活动的剩余库存，用户可领取次数进行扣减一个单位，并插入一条参与活动记录
         //PartakeReq中参与活动时间为now()
         PartakeResult partakeResult = activityPartake.doPartake(new PartakeReq(req.getuId(), req.getActivityId()));
-        if (!Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())) {
+        //第二个条件是判断缓存中没有未使用的活动？？？
+        if (!Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())
+                && !Constants.ResponseCode.NOT_CONSUMED_TAKE.getCode().equals(partakeResult.getCode())) {
             return new DrawProcessResult(partakeResult.getCode(), partakeResult.getInfo());
         }
+
+        //2. 首次成功领取活动，发送MQ
+        if (Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())) {
+            ActivityPartakeRecordVO activityPartakeRecord = new ActivityPartakeRecordVO();
+            activityPartakeRecord.setuId(req.getuId());
+            activityPartakeRecord.setActivityId(req.getActivityId());
+            activityPartakeRecord.setStockCount(partakeResult.getStockCount());
+            activityPartakeRecord.setStockSurplusCount(partakeResult.getStockSurplusCount());
+            //发送MQ
+            kafkaProducer.sendLotteryActivityPartakeRecord(activityPartakeRecord);
+        }
+
         //领取活动这一步会返回你领取活动的具体抽奖策略和参与抽奖的序列id
         Long strategyId = partakeResult.getStrategyId();
         Long takeId = partakeResult.getTakeId();
 
-        //2.执行抽奖，传入用户id，策略id，参与活动id
+        //3.执行抽奖，传入用户id，策略id，参与活动id
         DrawResult drawResult = drawExec.doDrawExec(new DrawReq(req.getuId(), strategyId, String.valueOf(takeId)));
         if (Constants.DrawState.FAIL.getCode().equals(drawResult.getDrawState())) {
             return new DrawProcessResult(Constants.ResponseCode.LOSING_DRAW.getCode(), Constants.ResponseCode.LOSING_DRAW.getInfo());
         }
         DrawAwardVO drawAwardVO = drawResult.getDrawAwardInfo();
 
-        //3.结果落库
+        //4.结果落库
         DrawOrderVO drawOrderVO = buildDrawOrderVO(req, strategyId, takeId, drawAwardVO);
         Result recordResult = activityPartake.recordDrawOrder(drawOrderVO);
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(recordResult.getCode())) {
             return new DrawProcessResult(recordResult.getCode(), recordResult.getInfo());
         }
 
-        //4.发送MQ，触发发奖流程
+        //5.发送MQ，触发发奖流程
         InvoiceVO invoiceVO = buildInvoiceVO(drawOrderVO);
         ListenableFuture<SendResult<String, Object>> future = kafkaProducer.sendLotteryInvoice(invoiceVO);
         future.addCallback(new ListenableFutureCallback<SendResult<String, Object>>() {
@@ -98,7 +113,7 @@ public class ActivityProcessImpl implements IActivityProcess {
             }
         });
 
-        //5.返回结果
+        //6.返回结果
         return new DrawProcessResult(Constants.ResponseCode.SUCCESS.getCode(),
                 Constants.ResponseCode.SUCCESS.getInfo(), drawAwardVO);
     }

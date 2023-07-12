@@ -7,6 +7,9 @@ import cn.itedus.lottery.domain.activity.model.vo.*;
 import cn.itedus.lottery.domain.activity.repository.IActivityRepository;
 import cn.itedus.lottery.infrastructure.dao.*;
 import cn.itedus.lottery.infrastructure.po.*;
+import cn.itedus.lottery.infrastructure.util.RedisUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +19,8 @@ import java.util.List;
 
 @Repository
 public class ActivityRepository implements IActivityRepository {
+
+    private Logger logger = LoggerFactory.getLogger(ActivityRepository.class);
 
     @Resource
     private IActivityDao activityDao;
@@ -27,6 +32,9 @@ public class ActivityRepository implements IActivityRepository {
     private IStrategyDetailDao strategyDetailDao;
     @Resource
     private IUserTakeActivityCountDao userTakeActivityCountDao;
+
+    @Resource
+    private RedisUtil redisUtil;
 
 
     @Override
@@ -78,6 +86,10 @@ public class ActivityRepository implements IActivityRepository {
     public ActivityBillVO queryActivityBill(PartakeReq req) {
         //查询活动信息
         Activity activity = activityDao.queryActivityById(req.getActivityId());
+
+        //从缓存中获取库存
+        Object usedStockCountObj = redisUtil.get(Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT(req.getActivityId()));
+
         //查询领取次数
         UserTakeActivityCount userTakeActivityCountReq = new UserTakeActivityCount();
         userTakeActivityCountReq.setuId(req.getuId());
@@ -94,7 +106,10 @@ public class ActivityRepository implements IActivityRepository {
         activityBillVO.setEndDateTime(activity.getEndDateTime());
         //每人可参与次数
         activityBillVO.setTakeCount(activity.getTakeCount());
-        activityBillVO.setStockSurplusCount(activity.getStockSurplusCount());
+        activityBillVO.setStockCount(activity.getStockCount());
+        //先判断缓存中库存是否为空，优先从缓存中拿
+        activityBillVO.setStockSurplusCount(null == usedStockCountObj ? activity.getStockSurplusCount()
+                : activity.getStockCount() - Integer.parseInt(String.valueOf(usedStockCountObj)));
         activityBillVO.setStrategyId(activity.getStrategyId());
         //活动的状态，编辑，提审，运行中等等等
         activityBillVO.setState(activity.getState());
@@ -129,11 +144,36 @@ public class ActivityRepository implements IActivityRepository {
 
     @Override
     public StockResult subtractionActivityStockByRedis(String uId, Long activityId, Integer stockCount) {
-        return null;
+        //1.获取抽奖活动库存key
+        String stockKey = Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT(activityId);
+
+        //2.扣减库存，目前占用库存数 (incr增加操作)
+        Integer stockUsedCount = (int) redisUtil.incr(stockKey, 1);
+
+        //3.超出库存判断，恢复原始库存（超卖判断，使用的库存数不能大于总库存数量）
+        if (stockUsedCount > stockCount) {
+            //减一
+            redisUtil.decr(stockKey, 1);
+            return new StockResult(Constants.ResponseCode.OUT_OF_STOCK.getCode(), Constants.ResponseCode.OUT_OF_STOCK.getInfo());
+        }
+
+        //4.以活动库存占用编号。生成对应的加锁的key，细化锁的颗粒度
+        String stockTokenKey = Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT_TOKEN(activityId, stockUsedCount);
+
+        //5.使用Redis.setNx 加一个分布式锁(setNx设置key，如果缓存中没有该key才会设置成功，否则返回false)
+        boolean lockToken = redisUtil.setNx(stockTokenKey, 350L);
+        if (!lockToken) {
+            logger.info("抽奖活动：{}，用户：{}秒杀扣减库存，分布式锁：{}失败", activityId, uId, stockTokenKey);
+            return new StockResult(Constants.ResponseCode.ERR_TOKEN.getCode(), Constants.ResponseCode.ERR_TOKEN.getInfo());
+        }
+        //剩余库存=总库存-使用的库存
+        return new StockResult(Constants.ResponseCode.SUCCESS.getCode(), Constants.ResponseCode.SUCCESS.getInfo(),
+                stockTokenKey, stockCount - stockUsedCount);
     }
 
     @Override
     public void recoverActivityCacheStockByRedis(Long activityId, String tokenKey, String code) {
-
+        //删除分布式锁
+        redisUtil.del(tokenKey);
     }
 }
