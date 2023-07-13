@@ -142,12 +142,20 @@ public class ActivityRepository implements IActivityRepository {
         return activityVOList;
     }
 
+    /**
+     *
+     * @param uId           用户id
+     * @param activityId    活动id
+     * @param stockCount    活动总库存，上一步从activity表中查询出来的
+     * @return
+     */
     @Override
     public StockResult subtractionActivityStockByRedis(String uId, Long activityId, Integer stockCount) {
         //1.获取抽奖活动库存key
         String stockKey = Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT(activityId);
 
-        //2.扣减库存，目前占用库存数 (incr增加操作)
+        //2.扣减库存，目前已经使用了的库存数；
+        // incr增加操作，如果键不存在，则会将键的初始值设为 0，（保证了刚开始使用库存数为0），然后进行递增操作，会返回递增后的结果
         Integer stockUsedCount = (int) redisUtil.incr(stockKey, 1);
 
         //3.超出库存判断，恢复原始库存（超卖判断，使用的库存数不能大于总库存数量）
@@ -157,7 +165,7 @@ public class ActivityRepository implements IActivityRepository {
             return new StockResult(Constants.ResponseCode.OUT_OF_STOCK.getCode(), Constants.ResponseCode.OUT_OF_STOCK.getInfo());
         }
 
-        //4.以活动库存占用编号。生成对应的加锁的key，细化锁的颗粒度
+        //4.以活动库存使用的数量，生成对应的加锁的key，细化锁的颗粒度
         String stockTokenKey = Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT_TOKEN(activityId, stockUsedCount);
 
         //5.使用Redis.setNx 加一个分布式锁(setNx设置key，如果缓存中没有该key才会设置成功，否则返回false)
