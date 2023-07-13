@@ -49,7 +49,7 @@ public class KafkaProducer {
     }
 
     /**
-     * 发送领取活动记录MQ
+     * 发送领取活动记录MQ，首次领取才会发送
      * 使用TOPIC_ACTIVITY_PARTAKE主题，与发货单MQ区分
      *
      * @param activityPartakeRecord 领取活动记录

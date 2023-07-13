@@ -61,13 +61,13 @@ public class ActivityProcessImpl implements IActivityProcess {
         //1.领取活动，对活动的剩余库存，用户可领取次数进行扣减一个单位，并插入一条参与活动记录
         //PartakeReq中参与活动时间为now()
         PartakeResult partakeResult = activityPartake.doPartake(new PartakeReq(req.getuId(), req.getActivityId()));
-        //第二个条件是判断缓存中没有未使用的活动？？？
+        //第二个条件是判断缓存中有没有未使用的活动，两个条件都不满足说明用户领取活动失败了
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())
                 && !Constants.ResponseCode.NOT_CONSUMED_TAKE.getCode().equals(partakeResult.getCode())) {
             return new DrawProcessResult(partakeResult.getCode(), partakeResult.getInfo());
         }
 
-        //2. 首次成功领取活动，发送MQ
+        //2. 首次成功领取活动，发送MQ，异步更新activity表的库存
         if (Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())) {
             ActivityPartakeRecordVO activityPartakeRecord = new ActivityPartakeRecordVO();
             activityPartakeRecord.setuId(req.getuId());

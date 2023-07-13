@@ -87,7 +87,7 @@ public class ActivityRepository implements IActivityRepository {
         //查询活动信息
         Activity activity = activityDao.queryActivityById(req.getActivityId());
 
-        //从缓存中获取库存
+        //从缓存中获取已使用库存
         Object usedStockCountObj = redisUtil.get(Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT(req.getActivityId()));
 
         //查询领取次数
@@ -151,7 +151,7 @@ public class ActivityRepository implements IActivityRepository {
      */
     @Override
     public StockResult subtractionActivityStockByRedis(String uId, Long activityId, Integer stockCount) {
-        //1.获取抽奖活动库存key
+        //1.获取抽奖活动库存key，保存该活动已经被使用了的数量
         String stockKey = Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT(activityId);
 
         //2.扣减库存，目前已经使用了的库存数；
@@ -181,7 +181,7 @@ public class ActivityRepository implements IActivityRepository {
 
     @Override
     public void recoverActivityCacheStockByRedis(Long activityId, String tokenKey, String code) {
-        //删除分布式锁
+        //删除分布式锁，即stockTokenKey（key：***_活动ID_库存使用数量）
         redisUtil.del(tokenKey);
     }
 }

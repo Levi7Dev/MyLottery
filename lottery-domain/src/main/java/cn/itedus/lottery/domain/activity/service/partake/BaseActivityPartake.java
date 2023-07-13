@@ -49,8 +49,8 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
         //此处扣减活动的库存已经进行了，如果后续第5步出现异常回滚，活动剩余库存不会回滚，已经被扣了一次
         StockResult subtractionActivityResult = this.subtractionActivityStockByRedis(req.getuId(),
                 req.getActivityId(), activityBillVO.getStockCount());
-
         //Result subtractionActivityResult = this.subtractionActivityStock(req);    //从数据库中扣减库存（被redis替代）
+
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(subtractionActivityResult.getCode())) {
             //失败需要恢复缓存
             this.recoverActivityCacheStockByRedis(req.getActivityId(), subtractionActivityResult.getStockKey(),
@@ -65,7 +65,8 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
             return new PartakeResult(grabResult.getCode(), grabResult.getInfo());
         }
 
-        //6. 扣减活动库存，通过Redis End
+        //6. 扣减活动库存，通过Redis End；（第4步在缓存中对活动使用库存+1，并设置了对应使用库存的分布式锁，第5步活动领取完成后需要删除该分布式锁）
+        //具体数据库中活动库存扣减交给MQ异步进行
         this.recoverActivityCacheStockByRedis(req.getActivityId(), subtractionActivityResult.getStockKey(),
                 Constants.ResponseCode.SUCCESS.getCode());
 
