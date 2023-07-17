@@ -30,6 +30,8 @@ import javax.annotation.Resource;
 import java.util.Map;
 
 /**
+ * 应用层主要编排抽奖的流程，如领取活动，执行抽奖，结果落库，奖品发送等骨干流程
+ * 每个流程下的具体细节交给具体的领域去完成
  * @author Levi
  * @create 2023/7/4 21:51
  */
