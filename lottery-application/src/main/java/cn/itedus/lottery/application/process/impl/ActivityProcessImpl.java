@@ -80,11 +80,12 @@ public class ActivityProcessImpl implements IActivityProcess {
             kafkaProducer.sendLotteryActivityPartakeRecord(activityPartakeRecord);
         }
 
-        //领取活动这一步会返回你领取活动的具体抽奖策略和参与抽奖的序列id
+        //领取活动这一步会返回你领取活动的具体抽奖策略和参与抽奖的序列id，领取活动完成后就可以进行具体的抽奖了
         Long strategyId = partakeResult.getStrategyId();
         Long takeId = partakeResult.getTakeId();
 
         //3.执行抽奖，传入用户id，策略id，参与活动id
+        //一个活动只有一个策略id，不能对应多个策略id
         DrawResult drawResult = drawExec.doDrawExec(new DrawReq(req.getuId(), strategyId, String.valueOf(takeId)));
         if (Constants.DrawState.FAIL.getCode().equals(drawResult.getDrawState())) {
             return new DrawProcessResult(Constants.ResponseCode.LOSING_DRAW.getCode(), Constants.ResponseCode.LOSING_DRAW.getInfo());
