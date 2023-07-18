@@ -154,22 +154,26 @@ public class ActivityRepository implements IActivityRepository {
         //1.获取抽奖活动库存key，保存该活动已经被使用了的数量
         String stockKey = Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT(activityId);
 
-        //2.扣减库存，目前已经使用了的库存数；
+        //2.增加一次已经使用的库存数量
         // incr增加操作，如果键不存在，则会将键的初始值设为 0，（保证了刚开始使用库存数为0），然后进行递增操作，会返回递增后的结果
+        // 这一步可能也会因为网络抖动的原因导致失败，这也是后续要加锁的原因，做到只有成功或者失败两种状态
         Integer stockUsedCount = (int) redisUtil.incr(stockKey, 1);
 
-        //3.超出库存判断，恢复原始库存（超卖判断，使用的库存数不能大于总库存数量）
+        //3.超出库存判断，恢复原始库存（超卖判断，使用的库存数不能大于总库存数量），库存没有了立即返回对应的code和info，不会进行后续操作
         if (stockUsedCount > stockCount) {
             //减一
             redisUtil.decr(stockKey, 1);
             return new StockResult(Constants.ResponseCode.OUT_OF_STOCK.getCode(), Constants.ResponseCode.OUT_OF_STOCK.getInfo());
         }
 
-        //4.以活动库存使用的数量，生成对应的加锁的key，细化锁的颗粒度
+        //4.以活动库存使用的数量，生成对应的加锁的key，细化锁的颗粒度，这是分段锁，只会锁住同一库存编号，保证同一库存数不会被消费多次，其他的库存编号不会被锁住
+        //如果是锁住活动id的话就是独占锁，在并发情况下所有用户都去竞争这把锁，不仅影响性能，而且存在解锁失败，导致其他用户无法领取活动的情况，甚至可能删了别人的锁，导致超卖问题
+        //独占锁想要避免误删锁，就要对这把锁设置唯一值，用来判断这把锁是否是我加的，不是我加的就不能解锁（通过程序判断）
         String stockTokenKey = Constants.RedisKey.KEY_LOTTERY_ACTIVITY_STOCK_COUNT_TOKEN(activityId, stockUsedCount);
 
         //5.使用Redis.setNx 加一个分布式锁(setNx设置key，如果缓存中没有该key才会设置成功，否则返回false)
         boolean lockToken = redisUtil.setNx(stockTokenKey, 350L);
+        //加锁失败，也就是秒杀领取活动失败
         if (!lockToken) {
             logger.info("抽奖活动：{}，用户：{}秒杀扣减库存，分布式锁：{}失败", activityId, uId, stockTokenKey);
             return new StockResult(Constants.ResponseCode.ERR_TOKEN.getCode(), Constants.ResponseCode.ERR_TOKEN.getInfo());

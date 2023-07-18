@@ -112,6 +112,9 @@ public class ActivityPartakeImpl extends BaseActivityPartake {
      */
     @Override
     protected Result grabActivity(PartakeReq partakeReq, ActivityBillVO billVO, Long takeId) {
+        //问题：如果一个场景需要在同一个事务下，连续操作不同的DAO操作，那么就会涉及到在 DAO 上使用注解 @DBRouter(key = "uId") 反复切换路由的操作。
+        //虽然都是一个数据源，但这样切换后，事务就没法处理了。
+        //解决：这里选择了一个较低的成本的解决方案，就是把数据源的切换放在事务处理前，而事务操作也通过编程式编码进行处理
         try {
             //是编程式处理分库分表，如果在不需要使用事务的场景下，直接使用注解配置到DAO方法上即可。两个方式不能混用
             //计算该用户产生的结果会落到哪个数据库上，结果保存在ThreadLocal中

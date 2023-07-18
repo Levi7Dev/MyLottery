@@ -350,14 +350,14 @@ public class Constants {
      */
     public static final class RedisKey {
 
-        // 抽奖活动使用了多少库存的Key
+        // 抽奖活动使用了多少库存的Key，==========用于保存活动库存的数值
         private static final String LOTTERY_ACTIVITY_STOCK_COUNT = "lottery_activity_stock_count_";
 
         public static String KEY_LOTTERY_ACTIVITY_STOCK_COUNT(Long activityId) {
             return LOTTERY_ACTIVITY_STOCK_COUNT + activityId;
         }
 
-        // 抽奖活动库存锁 Key
+        // 抽奖活动库存锁 Key，==========用作锁
         private static final String LOTTERY_ACTIVITY_STOCK_COUNT_TOKEN = "lottery_activity_stock_count_token_";
 
         public static String KEY_LOTTERY_ACTIVITY_STOCK_COUNT_TOKEN(Long activityId, Integer stockUsedCount) {

@@ -37,6 +37,9 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
 
         //2. 领取新的活动，需要查询该活动的基本信息
         //查询活动账单，根据活动id查询活动的信息（包括活动库存，可领取取的次数）
+        //根据活动id从activity表查询活动所有信息，但活动库存优先从缓存取
+        //根据用户id和活动id从user_take_activity_count表中获取用户参与活动的次数，然后聚合这些信息返回
+        //用户可能是第一次参与活动，所以user_take_activity_count表中没有记录，所以会返回null，此时用户可参与次数就是null
         ActivityBillVO activityBillVO = super.queryActivityBill(req);
 
         //3. 活动信息校验处理（活动库存，状态，日期，个人参与次数）
@@ -46,19 +49,21 @@ public abstract class BaseActivityPartake extends ActivityPartakeSupport impleme
         }
 
         //4. 扣减活动库存，通过Redis【活动库存扣减编号，作为锁的Key，缩小颗粒度】 Begin
+        //**先扣减活动表activity的库存，然后再采用事务的方式扣减用户参与活动次数，并生成一条参与记录
         //此处扣减活动的库存已经进行了，如果后续第5步出现异常回滚，活动剩余库存不会回滚，已经被扣了一次
         StockResult subtractionActivityResult = this.subtractionActivityStockByRedis(req.getuId(),
                 req.getActivityId(), activityBillVO.getStockCount());
         //Result subtractionActivityResult = this.subtractionActivityStock(req);    //从数据库中扣减库存（被redis替代）
 
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(subtractionActivityResult.getCode())) {
-            //失败需要恢复缓存
+            //失败需要删除对应的锁，让出给其他线程使用，但该用户参与活动失败了，不进行后续操作
             this.recoverActivityCacheStockByRedis(req.getActivityId(), subtractionActivityResult.getStockKey(),
                     subtractionActivityResult.getCode());
             return new PartakeResult(subtractionActivityResult.getCode(), subtractionActivityResult.getInfo());
         }
 
         //5. 领取活动信息，即在user_take_activity_count表中将用户可参与次数减一，在user_take_activity表中增加一条用户参与活动的记录
+        //使用雪花算法生成takeId，不使用数据库自增主键，项目采用了分库分表，数据库自增主键会重复，分布式场景下都不能使用自增id
         Long takeId = idGeneratorMap.get(Constants.Ids.SnowFlake).nextId();
         Result grabResult = this.grabActivity(req, activityBillVO, takeId);
         if (!Constants.ResponseCode.SUCCESS.getCode().equals(grabResult.getCode())) {

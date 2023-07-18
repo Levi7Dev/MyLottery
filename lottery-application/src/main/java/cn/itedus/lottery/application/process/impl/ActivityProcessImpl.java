@@ -68,8 +68,8 @@ public class ActivityProcessImpl implements IActivityProcess {
                 && !Constants.ResponseCode.NOT_CONSUMED_TAKE.getCode().equals(partakeResult.getCode())) {
             return new DrawProcessResult(partakeResult.getCode(), partakeResult.getInfo());
         }
-
-        //2. 首次成功领取活动，发送MQ，异步更新activity表的库存
+        //第一步完成之后，缓存中库存已经扣减了，用户可领取次数也扣减了，也新增了一条用户参与活动记录
+        //2. 首次成功领取活动，发送MQ，异步更新activity表的库存，如果有未消费的活动，在上一步会返回，通过NOT_CONSUMED_TAKE状态码判断
         if (Constants.ResponseCode.SUCCESS.getCode().equals(partakeResult.getCode())) {
             ActivityPartakeRecordVO activityPartakeRecord = new ActivityPartakeRecordVO();
             activityPartakeRecord.setuId(req.getuId());

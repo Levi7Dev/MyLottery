@@ -92,7 +92,7 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
         userTakeActivity.setStrategyId(strategyId);
         //首次领取活动，增加一条领取记录，设置状态为0，后续锁定记录将state修改为1
         userTakeActivity.setState(Constants.TaskState.NO_USED.getCode());
-        //uuid用来防重，会拼接已经参与的次数的信息
+        //uuid用来防重，会拼接已经参与的次数的信息，也用来保证幂等性
         String uuid = uId + "_" + activityId + "_" + userTakeActivity.getTakeCount();
         userTakeActivity.setUuid(uuid);
 
@@ -148,7 +148,7 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
         if (null == noConsumedTakeActivityOrder) {
             return null;
         }
-
+        //VO对象是自己领域的，主要目的是为了做到各领域隔离
         UserTakeActivityVO userTakeActivityVO = new UserTakeActivityVO();
         userTakeActivityVO.setActivityId(noConsumedTakeActivityOrder.getActivityId());
         userTakeActivityVO.setTakeId(noConsumedTakeActivityOrder.getTakeId());
