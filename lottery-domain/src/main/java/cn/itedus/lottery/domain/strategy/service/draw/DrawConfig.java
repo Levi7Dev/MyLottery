@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *@create 2023/6/23 17:01
  */
 public class DrawConfig {
+    //该注解默认按照名字装配，对应的component已经指定了名字
     @Resource
     private IDrawAlgorithm entiretyRateRandomDrawAlgorithm;
 

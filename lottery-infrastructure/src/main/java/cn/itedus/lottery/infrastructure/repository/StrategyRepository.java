@@ -33,6 +33,7 @@ public class StrategyRepository implements IStrategyRepository {
     @Override
     public StrategyRich queryStrategyRich(Long strategyId) {
         Strategy strategy = strategyDao.queryStrategy(strategyId);
+        //一个策略id对应多个策略明细，每个明细中包含不同商品，不同的中奖率
         List<StrategyDetail> strategyDetails = strategyDetailDao.queryStrategyDetailList(strategyId);
 
         StrategyBriefVO strategyBriefVO = new StrategyBriefVO();
