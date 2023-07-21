@@ -154,6 +154,7 @@ public class ActivityProcessImpl implements IActivityProcess {
         drawOrderVO.setStrategyMode(drawAwardVO.getStrategyMode());
         drawOrderVO.setGrantType(drawAwardVO.getGrantType());
         drawOrderVO.setGrantDate(drawAwardVO.getGrantDate());
+        //发奖的状态设置为初始状态，后续通过MQ异步发奖更新发奖状态为complete
         drawOrderVO.setGrantState(Constants.GrantState.INIT.getCode());
         drawOrderVO.setAwardId(drawAwardVO.getAwardId());
         drawOrderVO.setAwardType(drawAwardVO.getAwardType());

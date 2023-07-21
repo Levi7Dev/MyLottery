@@ -47,7 +47,7 @@ public class LotteryInvoiceListener {
             //1.转化对象
             InvoiceVO invoiceVO = JSON.parseObject((String) message.get(), InvoiceVO.class);
 
-            //2.获取发送奖品工厂，执行发奖，会更新中奖记录表颁奖类型，时间，状态信息
+            //2.获取发送奖品工厂，执行发奖，会更新中奖记录表(user_strategy_export)颁奖类型，时间，状态信息
             IDistributionGoods distributionGoodsService = distributionGoodsFactory.getDistributionGoodsService(invoiceVO.getAwardType());
             DistributionRes distributionRes = distributionGoodsService.doDistribution(new GoodsReq(invoiceVO.getuId(),
                     invoiceVO.getOrderId(), invoiceVO.getAwardId(), invoiceVO.getAwardName(), invoiceVO.getAwardContent()));
