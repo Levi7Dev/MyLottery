@@ -92,7 +92,7 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
             logger.info("执行策略抽奖完成【未中奖】，用户：{} 策略ID：{}", uId, strategyId);
             return new DrawResult(uId, strategyId, Constants.DrawState.FAIL.getCode());
         }
-
+        //根据中奖奖品id，查询奖品信息
         AwardBriefVO award = super.queryAwardInfoByAwardId(awardId);
         DrawAwardVO drawAwardVO = new DrawAwardVO(uId, award.getAwardId(), award.getAwardType(),
                                                     award.getAwardName(), award.getAwardContent());

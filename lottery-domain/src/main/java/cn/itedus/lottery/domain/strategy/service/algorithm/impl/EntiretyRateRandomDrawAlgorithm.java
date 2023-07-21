@@ -63,7 +63,8 @@ public class EntiretyRateRandomDrawAlgorithm extends BaseAlgorithm {
             if (randomVal <= cursorVal + rateVal) {
                 awardId = awardRateVO.getAwardId();
                 break;
-            }cursorVal += rateVal;
+            }
+            cursorVal += rateVal;
         }
 
         return awardId;

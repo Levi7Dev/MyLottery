@@ -131,7 +131,7 @@ public class UserTakeActivityRepository implements IUserTakeActivityRepository {
         userStrategyExport.setAwardName(drawOrder.getAwardName());
         userStrategyExport.setAwardContent(drawOrder.getAwardContent());
         userStrategyExport.setUuid(String.valueOf(drawOrder.getOrderId()));
-        //mq状态设置为初始状态，等mq消息生产完成再将状态改为COMPLETE，完成态1
+        //mq状态设置为初始状态0，等mq消息生产完成再将状态改为COMPLETE
         userStrategyExport.setMqState(Constants.MQState.INIT.getCode());
         userStrategyExportDao.insert(userStrategyExport);
     }

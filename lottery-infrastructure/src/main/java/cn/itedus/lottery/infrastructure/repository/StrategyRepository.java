@@ -58,7 +58,6 @@ public class StrategyRepository implements IStrategyRepository {
         awardBriefVO.setAwardType(award.getAwardType());
         awardBriefVO.setAwardName(award.getAwardName());
         awardBriefVO.setAwardContent(award.getAwardContent());
-
         return awardBriefVO;
     }
 
