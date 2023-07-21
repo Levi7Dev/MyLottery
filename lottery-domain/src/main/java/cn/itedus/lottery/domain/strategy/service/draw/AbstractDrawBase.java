@@ -31,10 +31,12 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
         //2.校验抽奖策略是否已经初始化到内存
         this.checkAndInitRateData(req.getStrategyId(), strategy.getStrategyMode(), strategyRich.getStrategyDetailList());
 
-        //3.获取不在抽奖范围内的列表，根据策略id查找符合条件的奖品id集合（该策略对应的奖品都会被排除掉），包括：奖品库存为空、风控策略、临时调整等
+        //3.获取无库存奖品列表，根据策略id查找符合条件的奖品id集合（该策略对应的奖品都会被排除掉），包括：奖品库存为空、风控策略、临时调整等
+        //查询策略id对应的策略详情信息，将剩余库存为0的奖品id返回，奖品都没有库存了肯定不能参与抽奖
         List<String> excludeAwardIds = this.queryExcludeAwardIds(req.getStrategyId());
 
-        //4.执行抽奖算法
+        //4.执行抽奖算法，将不参与抽奖的奖品id列表传入（即没有库存的奖品id集合）
+        //返回中奖的奖品id
         String awardId = this.drawAlgorithm(req.getStrategyId(), drawAlgorithmGroup.get(strategy.getStrategyMode()), excludeAwardIds);
 
         //5.封装中奖结果
@@ -42,6 +44,7 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
     }
 
     public void checkAndInitRateData(Long strategyId, Integer strategyMode, List<StrategyDetailBriefVO> strategyDetailList) {
+        //获取具体的抽奖算法
         IDrawAlgorithm drawAlgorithm = drawAlgorithmGroup.get(strategyMode);
 
         //已经初始化过数据，不必重复初始化
@@ -49,11 +52,12 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
             return;
         }
 
+        //从策略明细列表中获取奖品ID和对应的中奖概率，用于后续初始化
         List<AwardRateVO> awardRateVOList = new ArrayList<>(strategyDetailList.size());
         for (StrategyDetailBriefVO strategyDetail : strategyDetailList) {
             awardRateVOList.add(new AwardRateVO(strategyDetail.getAwardId(), strategyDetail.getAwardRate()));
         }
-
+        //根据中奖概率初始化中奖比率元祖
         drawAlgorithm.initRateTuple(strategyId, strategyMode, awardRateVOList);
     }
 
@@ -70,7 +74,7 @@ public abstract class AbstractDrawBase extends DrawStrategySupport implements ID
      * 执行抽奖算法，抽象方法，具体实现交给业务
      * @param strategyId      策略ID
      * @param drawAlgorithm   抽奖算法模型
-     * @param excludeAwardIds 排除的抽奖ID集合
+     * @param excludeAwardIds 无库存的奖品ID集合
      * @return 中奖奖品ID
      */
     protected abstract String drawAlgorithm(Long strategyId, IDrawAlgorithm drawAlgorithm, List<String> excludeAwardIds);

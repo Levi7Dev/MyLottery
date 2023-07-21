@@ -30,7 +30,7 @@ public class DrawExecImpl extends AbstractDrawBase {
 
     @Override
     protected String drawAlgorithm(Long strategyId, IDrawAlgorithm drawAlgorithm, List<String> excludeAwardIds) {
-        //执行抽奖
+        //执行抽奖，这里是使用了策略模式，会根据策略执行具体的抽奖算法
         String awardId = drawAlgorithm.randomDraw(strategyId, excludeAwardIds);
         //判断抽奖结果
         if (null == awardId) {
