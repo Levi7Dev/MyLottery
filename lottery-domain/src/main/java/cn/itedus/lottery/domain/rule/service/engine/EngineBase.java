@@ -41,6 +41,7 @@ public abstract class EngineBase extends EngineConfig implements EngineFilter {
             String matterValue = logicFilter.matterValue(matterReq);
             Long nextNode = logicFilter.filter(matterValue, treeNodeInfo.getTreeNodeLineInfoList());
             treeNodeInfo = treeNodeMap.get(nextNode);
+
             logger.info("决策树引擎=>{} userId：{} treeId：{} treeNode：{} ruleKey：{} matterValue：{}",
                     treeRoot.getTreeName(), matterReq.getUserId(), matterReq.getTreeId(), treeNodeInfo.getTreeNodeId(), ruleKey, matterValue);
         }

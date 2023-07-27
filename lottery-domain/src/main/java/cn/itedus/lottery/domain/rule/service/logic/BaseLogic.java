@@ -16,6 +16,7 @@ public abstract class BaseLogic implements LogicFilter {
     @Override
     public Long filter(String matterValue, List<TreeNodeLineVO> treeNodeLineInfoList) {
         for (TreeNodeLineVO nodeLine : treeNodeLineInfoList) {
+            //判断从map中取出的matterValue是否满足决策树中节点连线的决策限制，返回满足的节点，即走到下一个节点（一个节点对应多个子节点，但只有一个满足条件）
             if (decisionLogic(matterValue, nodeLine)) {
                 return nodeLine.getNodeIdTo();
             }

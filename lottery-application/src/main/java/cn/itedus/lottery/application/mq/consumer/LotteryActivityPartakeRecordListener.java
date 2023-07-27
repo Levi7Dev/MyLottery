@@ -45,6 +45,8 @@ public class LotteryActivityPartakeRecordListener {
         //3.更新数据库库存
         //【实际场景业务体量较大，可能也会由于MQ消费引起并发，对数据库产生压力，所以如果并发量较大，
         // 可以把库存记录缓存中，并使用定时任务进行处理缓存和数据库库存同步，减少对数据库的操作次数】
+        //这里存在消息重复消费问题，如果一条扣减库存消息被重复消费会导致库存被多次扣减
+        //需要将已经消费的mq消息放入缓存中，保证不会重复消费
         activityPartake.updateActivityStock(activityPartakeRecordVO);
     }
 
